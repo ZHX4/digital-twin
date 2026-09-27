@@ -1,3 +1,14 @@
+## 4.0.0 — World Laboratory
+
+- added latent learner state and skill transfer;
+- added contextual-bandit curriculum planning;
+- added multi-agent learner/family/school/teacher world;
+- added population simulation and bootstrap uncertainty;
+- added explicit policy objects and Pareto policy search;
+- added benchmark suite and real-data adapter boundary;
+- added v4 research dashboard and APIs;
+- fixed pathway-persistence calibration ordering in the v3 simulator.
+
 # Changelog
 
 ## 3.0.0 — Research Laboratory
