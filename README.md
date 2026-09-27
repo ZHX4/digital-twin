@@ -1,3 +1,48 @@
+
+## v4.0 — From Digital Twin to World Laboratory
+
+The repository now has an executable multi-scale layer above the original longitudinal twin:
+
+- Latent learner model: explicit mastery, uncertainty, retention, misconceptions and cross-skill transfer.
+- Knowledge graph: prerequisite-linked skills instead of independent domain scores.
+- Contextual-bandit curriculum: linear-UCB planner chooses learning interventions from learner/environment context.
+- Multi-agent world: learners, families, teachers and schools interact over time.
+- Population simulation: hundreds/thousands of synthetic learners with quantiles and bootstrap intervals.
+- Education policy simulator: explicit policy objects rather than hard-coded scenarios.
+- Pareto policy search: learning, wellbeing, agency, equity, mismatch and inequality are treated as competing objectives.
+- Benchmark suite: reproducible learner-model comparison with Brier, accuracy and ECE diagnostics plus a real-data ingestion boundary.
+- Research dashboard: Twin, World, Policy Lab and Benchmark views are exposed from the default UI.
+
+### New research loop
+
+```text
+Learner state
+   ↓
+Curriculum action
+   ↓
+Teacher / school / family context
+   ↓
+Population trajectory
+   ↓
+Policy comparison
+   ↓
+Pareto frontier
+   ↓
+Counterfactual questions
+```
+
+The v4 world remains synthetic. Its purpose is to make the assumptions of a future education system executable and falsifiable before empirical calibration.
+
+### New endpoints
+
+- GET /api/world/simulate
+- GET /api/world/policies
+- GET /api/population
+- GET /api/population/compare
+- GET /api/policy-search
+- GET /api/benchmark
+- GET /api/research-pack
+
 # Digital Twin
 
 > **A synthetic research laboratory for a future education system that models each learner as a continuously updated Digital Twin.**
