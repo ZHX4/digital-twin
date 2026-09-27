@@ -1,28 +1,17 @@
-name: probe-ci
+name: research-ci
 on: [push, pull_request]
+permissions:
+  contents: read
 jobs:
-  python:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/setup-python@v5
-        with: {python-version: "3.12"}
-      - run: python --version
-      - run: pip --version
-      - run: python -c "print('python-ok')"
-  requirements:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: {python-version: "3.12"}
-      - run: python --version
+        with:
+          python-version: "3.12"
       - run: pip install -r requirements.txt
-      - run: python -c "import numpy,fastapi,pytest; print('deps-ok')"
-  source-import:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: {python-version: "3.12"}
-      - run: pip install -r requirements.txt
-      - run: python -c "import app; print('app-ok')"
+      - run: python -m compileall -q app tests
+      - run: pytest -q
+      - run: python scripts/run_experiment.py policy-comparison --size 8
+      - run: python scripts/run_experiment.py sensitivity --samples 16
