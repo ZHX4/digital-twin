@@ -49,3 +49,25 @@ def compare_population_policies(seed: int = 42, learners: int = 256, years: int 
     for idx, policy in enumerate(policies):
         rows[policy] = run_population(seed + idx * 1013, learners=learners, years=years, policy=policy, trajectories=False)
     return rows
+
+
+def monte_carlo_policy(seed: int = 42, policy: str = "digital_twin", repetitions: int = 12,
+                       learners: int = 96, years: int = 10) -> Dict:
+    runs = []
+    for i in range(repetitions):
+        result = run_population(seed + i * 10007, learners=learners, years=years, policy=policy, trajectories=False)
+        runs.append(result["world"]["metrics"])
+    def ci(metric: str):
+        values = [row[metric] for row in runs]
+        lo, hi = bootstrap_ci(values, seed + 999 + len(metric), rounds=300)
+        return {"mean": round(mean(values), 5), "ci95": [lo, hi], "distribution": quantiles(values)}
+    return {
+        "schema_version": "4.0",
+        "seed": seed,
+        "policy": policy,
+        "repetitions": repetitions,
+        "learners_per_run": learners,
+        "years": years,
+        "metrics": {metric: ci(metric) for metric in ("competency_mean", "wellbeing_mean", "agency_mean", "mismatch_mean", "equity_index")},
+        "interpretation": "Monte Carlo over synthetic worlds; confidence intervals quantify simulator variability, not sampling uncertainty in real populations.",
+    }
