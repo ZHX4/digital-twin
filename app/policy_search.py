@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import random
-from dataclasses import asdict, replace
+from dataclasses import asdict
 from typing import Dict, Iterable, List
 
 from .population import run_population
@@ -57,16 +57,7 @@ def search_policies(seed: int = 42, candidates: int = 24, learners: int = 96, ye
         candidate = _candidate(f"candidate-{i:03d}", rng, POLICIES["digital_twin"])
         if i == 0:
             candidate = POLICIES["digital_twin"]
-        result = run_population(seed + 17 * i, learners=learners, years=years, policy="digital_twin" if candidate.name in POLICIES else "digital_twin", trajectories=False)
-        # Inject candidate parameters into the world policy for the actual search using a lightweight local patch.
-        # The simulator is parameterized by a named policy, so candidates are evaluated via temporary registry mutation.
-        old = POLICIES.get(candidate.name)
-        POLICIES[candidate.name] = candidate
-        try:
-            result = run_population(seed + 17 * i, learners=learners, years=years, policy=candidate.name, trajectories=False)
-        finally:
-            if old is None: POLICIES.pop(candidate.name, None)
-            else: POLICIES[candidate.name] = old
+        result = run_population(seed + 17 * i, learners=learners, years=years, policy="digital_twin", trajectories=False, policy_override=candidate)
         objectives = _score(result)
         rows.append({"candidate": asdict(candidate), "objectives": objectives})
     frontier = pareto_frontier(rows)
