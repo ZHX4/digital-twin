@@ -62,3 +62,22 @@ def test_synthetic_benchmark():
     result = evaluate_benchmark(seed=9, learners=16, steps=8)
     assert set(result["methods"]) == {"global_rate", "learner_mastery", "digital_twin"}
     assert all(0 <= row["brier"] <= 1 for row in result["methods"].values())
+
+
+def test_policy_search_does_not_mutate_registry():
+    from app.policy_search import search_policies
+    from app.world import POLICIES
+    before = tuple(sorted(POLICIES))
+    result = search_policies(seed=2, candidates=3, learners=10, years=4)
+    after = tuple(sorted(POLICIES))
+    assert before == after
+    assert len(result["pareto_frontier"]) >= 1
+
+
+def test_research_manifest_contains_result_keys():
+    from app.research import run_research_pack
+    # Use a lightweight direct manifest construction to avoid running the full pack in unit tests.
+    from app.research import manifest
+    out = manifest("unit", 1, {"x": 1}, {"alpha": {}, "beta": {}})
+    assert out["model_version"] == "4.0.0"
+    assert out["result_keys"] == ["alpha", "beta"]
