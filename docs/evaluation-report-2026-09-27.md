@@ -103,7 +103,7 @@ Temperature scaling improved both measured metrics, but calibration remains weak
 ### Unit/integration tests
 
 - pytest: **64 passed**
-- `make test`: **PASS`
+- `make test`: **PASS**
 - `make research-v4`: **PASS**
 - `make validation`: **PASS**
 
