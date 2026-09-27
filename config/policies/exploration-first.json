@@ -1,0 +1,11 @@
+{
+  "name": "exploration_first",
+  "specialization_age": 13,
+  "acceleration": 0.5,
+  "exploration": 0.95,
+  "mentorship": 0.88,
+  "teacher_ratio": 14,
+  "resource_equalization": 0.45,
+  "tutor_enabled": true,
+  "core_ratio": 0.58
+}
