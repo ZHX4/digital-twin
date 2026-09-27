@@ -152,9 +152,11 @@ def _run_one(cfg: ChildConfig, include_experiments: bool = True) -> TwinState:
         recommendations.append(rec)
         posterior_rows.extend(pathway_posteriors(age, rec, min(1.0, len(evidence) / 40.0)))
         top_path_predictions.append(rec.confidence)
+        current_path = rec.pathway
         if previous_path is not None:
-            stability_samples.append(1.0 if previous_path == rec.pathway else 0.0)
-        previous_path = rec.pathway
+            stability_samples.append(1.0 if previous_path == current_path else 0.0)
+            synthetic_outcomes.append(1.0 if previous_path == current_path else 0.0)
+        previous_path = current_path
 
         if age >= 6:
             max_units = 3 if cfg.scenario == "traditional" else (7 if age >= 12 else 5)
@@ -217,8 +219,6 @@ def _run_one(cfg: ChildConfig, include_experiments: bool = True) -> TwinState:
                 audit_log.append({"age": age, "action": "competency_gate", "status": "PASSED",
                                   "gate_score": round(gate_score, 4), "reversible": True, "human_review_required": True})
 
-        if age >= 6 and previous_path is not None:
-            synthetic_outcomes.append(1.0 if rec.pathway == previous_path else 0.0)
 
     final_rec = recommendations[-1]
     pathway_stability = mean(stability_samples) if stability_samples else 0.0
