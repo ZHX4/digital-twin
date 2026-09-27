@@ -1,16 +1,48 @@
 from fastapi.testclient import TestClient
+
 from app.main import app
-client=TestClient(app)
+
+
+client = TestClient(app)
+
+
 def test_health_endpoint():
-    r=client.get("/health");assert r.status_code==200;assert r.json()["status"]=="ok";assert r.json()["version"]=="4.0.0"
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.json()["status"] == "ok"
+    assert response.json()["version"] == "4.0.0"
+
+
 def test_simulation_endpoint():
-    r=client.get("/api/simulate?seed=42&scenario=global_digital_twin");assert r.status_code==200
-    data=r.json();assert data["identity"]["age_horizon"]==16;assert len(data["recommendations"])==17;assert "ranked_pathways" in data["recommendations"][-1];assert len(data["assessments"])>=50
+    response = client.get("/api/simulate?seed=42&scenario=global_digital_twin")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["identity"]["age_horizon"] == 16
+    assert len(data["recommendations"]) == 17
+    assert "ranked_pathways" in data["recommendations"][-1]
+    assert len(data["assessments"]) >= 50
+
+
 def test_research_endpoints():
-    for path in ["/api/metadata","/api/experiments","/api/experiment/counterfactual","/api/experiment/fairness?per_group=8"]:
-        assert client.get(path).status_code==200
+    for path in [
+        "/api/metadata",
+        "/api/experiments",
+        "/api/experiment/counterfactual",
+        "/api/experiment/fairness?per_group=8",
+    ]:
+        assert client.get(path).status_code == 200
+
+
 def test_compare_endpoint():
-    r=client.get("/api/compare?seed=42&size=8");assert r.status_code==200;assert set(r.json())=={"traditional","adaptive","genomic_adaptive","global_digital_twin"}
+    response = client.get("/api/compare?seed=42&size=8")
+    assert response.status_code == 200
+    assert set(response.json()) == {
+        "traditional",
+        "adaptive",
+        "genomic_adaptive",
+        "global_digital_twin",
+    }
+
 
 def test_v4_world_and_research_endpoints():
     for path in [
@@ -28,3 +60,23 @@ def test_v4_world_and_research_endpoints():
         assert response.status_code == 200, path
     assert client.get("/api/world/simulate?learners=12&years=4").json()["schema_version"] == "4.0"
 
+
+def test_unknown_policy_is_controlled_validation_error():
+    for path in [
+        "/api/world/simulate?policy=does_not_exist&learners=8&years=4",
+        "/api/population?policy=does_not_exist&learners=16&years=4",
+        "/api/monte-carlo?policy=does_not_exist&repetitions=4&learners=16&years=4",
+    ]:
+        response = client.get(path)
+        assert response.status_code == 422
+        assert "Unknown policy" in response.json()["detail"]
+
+
+def test_unknown_scenario_is_controlled_validation_error():
+    for path in [
+        "/api/simulate?scenario=does_not_exist",
+        "/api/cohort?scenario=does_not_exist&size=8",
+    ]:
+        response = client.get(path)
+        assert response.status_code == 422
+        assert "Unknown scenario" in response.json()["detail"]
