@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "digital-twin-education-research"
+version = "3.0.0"
+description = "Research-grade synthetic simulation laboratory for a longitudinal Digital Twin of human development and personalized education."
+requires-python = ">=3.10"
+dependencies = [
+  "fastapi>=0.115,<1",
+  "uvicorn[standard]>=0.30,<1",
+  "numpy>=2.0,<3",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+addopts = "-q"
+
+[tool.setuptools]
+packages = ["app"]
