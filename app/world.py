@@ -123,7 +123,7 @@ def simulate_world(seed: int = 42, learners: int = 128, years: int = 12, policy_
         resources = max(0.35, min(0.98, 0.48 + 0.42 * rng.random()))
         school_objs.append(SchoolAgent(f"school-{s:03d}", resources, 0.82 + 0.15 * rng.random(),
                                        0.40 + 0.55 * rng.random(), _school_culture(s)))
-        teacher_count = max(2, int(25 / policy.teacher_ratio * 22))
+        teacher_count = max(2, int(round(25 / max(1.0, policy.teacher_ratio))))
         for t in range(teacher_count):
             teacher_objs.append(TeacherAgent(f"teacher-{s}-{t}", school_objs[-1].school_id,
                                              0.62 + 0.34 * rng.random(), policy.mentorship * (0.82 + 0.18 * rng.random())))
