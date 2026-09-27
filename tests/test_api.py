@@ -20,6 +20,9 @@ def test_v4_world_and_research_endpoints():
         "/api/population/compare?seed=42&learners=16&years=4",
         "/api/policy-search?seed=42&candidates=4&learners=16&years=4",
         "/api/benchmark?seed=42&learners=16&steps=8",
+        "/api/model-registry",
+        "/api/monte-carlo?seed=42&policy=digital_twin&repetitions=4&learners=16&years=4",
+        "/api/shift-demo?seed=42&learners=16&years=4",
     ]:
         response = client.get(path)
         assert response.status_code == 200, path
