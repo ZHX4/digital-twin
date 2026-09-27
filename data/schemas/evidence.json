@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"Evidence","type":"object","required":["age","source","domain","observed_mastery","confidence","context"]}
