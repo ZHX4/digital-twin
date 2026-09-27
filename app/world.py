@@ -8,6 +8,7 @@ from typing import Dict, List, Tuple
 
 from .curriculum_agent import LinearUCBCurriculum
 from .learner_model import LatentLearnerState, competency_index, initial_state, learn, select_information_gap
+from .tutor import TutorAgent
 from .market import market_snapshot
 
 SKILL_TO_PATHWAY = {
@@ -145,6 +146,7 @@ def simulate_world(seed: int = 42, learners: int = 128, years: int = 12, policy_
     schools_by_id = {s.school_id: s for s in school_objs}
     families_by_id = {f.family_id: f for f in family_objs}
     planners = {agent.learner_id: LinearUCBCurriculum(alpha=0.55) for agent in learner_objs}
+    tutor = TutorAgent()
     trajectories: List[Dict] = []
 
     for year in range(years):
@@ -176,8 +178,14 @@ def simulate_world(seed: int = 42, learners: int = 128, years: int = 12, policy_
             intensity = min(1.0, action.intensity * (0.66 + 0.34 * policy.acceleration))
             quality = min(1.0, teacher.quality * (0.60 + 0.25 * teacher.mentorship + 0.15 * access))
             gain = learn(agent.state, action.skill, intensity, quality, peer_effect, transfer=True, rng=local)
+            tutor_intervention = None
+            tutor_gain = 0.0
             if policy.tutor_enabled and local.random() < 0.52:
-                gain += learn(agent.state, focus_skill, 0.23 + 0.23 * policy.mentorship, min(1.0, quality + 0.05), 0.0, transfer=True, rng=local)
+                tutor_intervention = tutor.propose(agent.state, actions)
+                tutor_gain = learn(agent.state, tutor_intervention.action.skill,
+                                   0.23 + 0.23 * policy.mentorship, min(1.0, quality + 0.05),
+                                   0.0, transfer=True, rng=local)
+                gain += tutor_gain
                 agent.interventions += 1
             reward = (
                 0.45 * gain
@@ -201,6 +209,9 @@ def simulate_world(seed: int = 42, learners: int = 128, years: int = 12, policy_
                     "resource_stratum": _stratum(agent.resource_access), "competency": competency_index(agent.state),
                     "wellbeing": agent.state.wellbeing, "agency": agent.state.agency, "pathway": agent.pathway,
                     "action": action.action_id, "skill": action.skill, "gain": round(gain, 5),
+                    "tutor_action": tutor_intervention.action.action_id if tutor_intervention else None,
+                    "tutor_target": tutor_intervention.target_skill if tutor_intervention else None,
+                    "tutor_gain": round(tutor_gain, 5),
                     "school_resources": school.resources, "peer_effect": round(peer_effect, 5),
                 })
 
