@@ -1,0 +1,11 @@
+{
+  "name": "digital_twin",
+  "specialization_age": 11,
+  "acceleration": 0.76,
+  "exploration": 0.88,
+  "mentorship": 0.94,
+  "teacher_ratio": 10,
+  "resource_equalization": 0.82,
+  "tutor_enabled": true,
+  "core_ratio": 0.55
+}
