@@ -37,3 +37,13 @@ research-v4:
 	python scripts/run_experiment.py sensitivity --samples 64
 	python scripts/run_experiment.py fairness --per-group 24
 	python scripts/run_experiment.py calibration --size 64
+
+validation:
+	python scripts/run_validation.py --seed 42 --seeds 4 --learners 24 --years 6
+
+quality:
+	python -m ruff check app tests scripts
+	python -m mypy app
+	python -m compileall -q app tests scripts
+	python -m pip_audit -r requirements.txt
+	python -m bandit -q -r app scripts -s B311
