@@ -1,59 +1,58 @@
 name: research-ci
 on: [push, pull_request]
-permissions:
-  contents: write
+
 jobs:
-  test:
+  syntax:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Build and test with diagnostics
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          REPO: ${{ github.repository }}
-          SHA: ${{ github.sha }}
-          RUN_ID: ${{ github.run_id }}
-        run: |
-          set +e
-          {
-            echo "=== python ==="
-            python --version
-            echo "=== install ==="
-            pip install -r requirements.txt
-            echo "=== compile ==="
-            python -m compileall -q app tests
-            echo "=== pytest ==="
-            pytest -q
-            echo "=== research smoke ==="
-            python scripts/run_experiment.py policy-comparison --size 4
-            python scripts/run_experiment.py sensitivity --samples 8
-          } > ci-output.txt 2>&1
-          status=$?
-          python - <<'PY'
-          import base64, json, os, urllib.request
-          path = f"ci-diagnostics/run-{os.environ['RUN_ID']}.txt"
-          content = open("ci-output.txt", "rb").read()
-          payload = json.dumps({
-              "message": f"ci diagnostics {os.environ['RUN_ID']} [skip ci]",
-              "content": base64.b64encode(content).decode(),
-              "branch": "main",
-          }).encode()
-          req = urllib.request.Request(
-              f"https://api.github.com/repos/{os.environ['REPO']}/contents/{path}",
-              data=payload,
-              method="PUT",
-              headers={
-                  "Authorization": f"Bearer {os.environ['GITHUB_TOKEN']}",
-                  "Accept": "application/vnd.github+json",
-                  "X-GitHub-Api-Version": "2022-11-28",
-                  "Content-Type": "application/json",
-              },
-          )
-          with urllib.request.urlopen(req) as response:
-              print(response.status)
-          PY
-          cat ci-output.txt
-          exit $status
+        with: {python-version: "3.12"}
+      - run: pip install -r requirements.txt
+      - run: python -m compileall -q app tests
+
+  imports:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install -r requirements.txt
+      - run: python -c "from app.main import app; from app.world import simulate_world; from app.policy_search import search_policies; from app.benchmark import evaluate_benchmark; print('imports-ok')"
+
+  legacy-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install -r requirements.txt
+      - run: pytest -q tests/test_simulation.py
+
+  api-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install -r requirements.txt
+      - run: pytest -q tests/test_api.py
+
+  v4-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install -r requirements.txt
+      - run: pytest -q tests/test_v4.py
+
+  research-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install -r requirements.txt
+      - run: python scripts/run_experiment.py policy-comparison --size 4
+      - run: python scripts/run_experiment.py sensitivity --samples 8
