@@ -1,0 +1,11 @@
+{
+  "name": "traditional",
+  "specialization_age": 13,
+  "acceleration": 0.35,
+  "exploration": 0.25,
+  "mentorship": 0.45,
+  "teacher_ratio": 22,
+  "resource_equalization": 0.1,
+  "tutor_enabled": false,
+  "core_ratio": 0.72
+}
