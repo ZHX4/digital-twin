@@ -30,8 +30,8 @@ def bootstrap_ci(values: Sequence[float], seed: int = 42, rounds: int = 400) -> 
     return round(means[int(0.025 * rounds)], 5), round(means[int(0.975 * rounds) - 1], 5)
 
 def run_population(seed: int = 42, learners: int = 512, years: int = 12, policy: str = "digital_twin",
-                   trajectories: bool = False) -> Dict:
-    result = simulate_world(seed, learners=learners, years=years, policy_name=policy, return_trajectories=trajectories)
+                   trajectories: bool = False, policy_override=None) -> Dict:
+    result = simulate_world(seed, learners=learners, years=years, policy_name=policy, return_trajectories=trajectories, policy_override=policy_override)
     competency = [row["competency"] for row in result["terminal"]]
     wellbeing = [row["wellbeing"] for row in result["terminal"]]
     return {
