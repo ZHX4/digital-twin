@@ -27,3 +27,13 @@ research:
 clean:
 	find . -type d -name __pycache__ -prune -exec rm -rf {} +
 	find . -type d -name .pytest_cache -prune -exec rm -rf {} +
+
+world:
+	python -m app.main
+
+research-v4:
+	python scripts/run_research_pack.py --seed 42
+	python scripts/run_experiment.py policy-comparison --size 32
+	python scripts/run_experiment.py sensitivity --samples 64
+	python scripts/run_experiment.py fairness --per-group 24
+	python scripts/run_experiment.py calibration --size 64
