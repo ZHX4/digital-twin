@@ -13,6 +13,9 @@ from .population import run_population, compare_population_policies
 from .policy_search import search_policies
 from .world import POLICIES, simulate_world
 from .research import run_research_pack
+from .model_registry import registry as model_registry
+from .population import monte_carlo_policy
+from .shift import distribution_shift_report
 from .experiments_registry import EXPERIMENTS
 from .models import ChildConfig, PATHWAYS, SCENARIOS, SCENARIO_PARAMS
 from .simulation import simulate
@@ -124,12 +127,41 @@ def api_research_pack(seed: int = 42) -> dict:
     return run_research_pack(seed)
 
 
+@app.get("/api/model-registry")
+def api_model_registry() -> dict:
+    return model_registry()
+
+
+@app.get("/api/monte-carlo")
+def api_monte_carlo(seed: int = 42, policy: str = "digital_twin", repetitions: int = Query(12, ge=4, le=64),
+                   learners: int = Query(96, ge=16, le=512), years: int = Query(10, ge=4, le=16)) -> dict:
+    return monte_carlo_policy(seed, policy=policy, repetitions=repetitions, learners=learners, years=years)
+
+
+@app.get("/api/shift-demo")
+def api_shift_demo(seed: int = 42, learners: int = Query(96, ge=16, le=512), years: int = Query(8, ge=4, le=16)) -> dict:
+    from .world import simulate_world
+    reference = simulate_world(seed, learners=learners, years=years, policy_name="digital_twin", return_trajectories=False)
+    shifted = simulate_world(seed + 701, learners=learners, years=years, policy_name="resource_balanced", return_trajectories=False)
+    def features(world):
+        rows = world["terminal"]
+        return {
+            "competency": [r["competency"] for r in rows],
+            "wellbeing": [r["wellbeing"] for r in rows],
+            "agency": [r["agency"] for r in rows],
+            "resource_access": [r["resource_access"] for r in rows],
+        }
+    return {"reference_policy": "digital_twin", "shifted_policy": "resource_balanced",
+            "diagnostic": distribution_shift_report(features(reference), features(shifted)),
+            "warning": "This endpoint demonstrates a synthetic covariate-shift diagnostic; it is not a real OOD detector."}
+
+
 @app.get("/api/metadata")
 def metadata() -> dict[str, Any]:
     return {"version": "4.0.0", "scenarios": SCENARIOS, "scenario_parameters": SCENARIO_PARAMS, "pathways": PATHWAYS,
         "system_layers": ["synthetic_genome_prior", "longitudinal_digital_twin", "irt_cat_assessment", "bayesian_knowledge_tracing",
             "forgetting_model", "active_exploration", "adaptive_curriculum", "pathway_posteriors", "causal_counterfactuals",
-            "fairness_lab", "calibration_lab", "dynamic_labor_market", "life_course_stress_test", "governance_audit", "latent_world_model", "multi_agent_world", "contextual_bandit_curriculum", "population_simulation", "policy_search", "pareto_frontier", "benchmark_suite"],
+            "fairness_lab", "calibration_lab", "dynamic_labor_market", "life_course_stress_test", "governance_audit", "latent_world_model", "multi_agent_world", "contextual_bandit_curriculum", "population_simulation", "policy_search", "pareto_frontier", "benchmark_suite", "model_registry", "monte_carlo_uncertainty", "distribution_shift_diagnostics", "tutor_agent"],
         "disclaimer": "Synthetic research simulator. No real genetic, medical, psychological, or career inference is performed."}
 
 
