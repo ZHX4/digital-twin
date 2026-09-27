@@ -1,0 +1,16 @@
+version: 3.0.0
+seed: 42
+default_scenario: global_digital_twin
+horizon: 16
+life_horizon: 30
+experiments:
+  policy_comparison_size: 64
+  counterfactual: true
+  genomic_ablation_size: 64
+  sensitivity_samples: 128
+  fairness_per_group: 24
+  calibration_size: 64
+governance:
+  genomic_weight_cap: 0.10
+  human_review_confidence_threshold: 0.55
+  early_age_reversibility_until: 9
