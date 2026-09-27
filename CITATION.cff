@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use Digital Twin in research, please cite this repository."
+title: "Digital Twin — Human Development Research Laboratory"
+type: software
+version: 3.0.0
+date-released: 2026-09-27
+abstract: "A synthetic longitudinal research laboratory for learner Digital Twins, adaptive psychometrics, skill tracing, pathway posteriors, counterfactual policy experiments, fairness diagnostics, genomic-prior ablations and life-course stress testing."
+license: MIT
+authors:
+  - family-names: "Seif Alislem"
+    given-names: "Abed Zakaria"
+repository-code: "https://github.com/ZHX4/Digital-Twin"
+keywords:
+  - digital-twin
+  - personalized-learning
+  - adaptive-education
+  - educational-ai
+  - learning-analytics
+  - knowledge-tracing
+  - psychometrics
+  - causal-simulation
+  - responsible-ai
+  - systems-research
