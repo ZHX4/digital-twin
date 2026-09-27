@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"Recommendation","type":"object","required":["age","pathway","score","confidence","exploration_priority","contributing_domains","ranked_pathways","rationale","safety_flags"]}
