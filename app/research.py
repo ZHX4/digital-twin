@@ -32,9 +32,5 @@ def run_research_pack(seed: int = 42) -> Dict:
     comparison = compare_population_policies(seed, learners=96, years=10)
     search = search_policies(seed+1, candidates=12, learners=64, years=8)
     benchmark = evaluate_benchmark(seed+2, learners=64, steps=18)
-    return {
-        "manifest": manifest("v4_research_pack",seed,{"population":96,"policy_candidates":12,"benchmark_learners":64},{}),
-        "policy_comparison": comparison,
-        "policy_search": search,
-        "benchmark": benchmark,
-    }
+    results = {"policy_comparison": comparison, "policy_search": search, "benchmark": benchmark}
+    return {"manifest": manifest("v4_research_pack", seed, {"population":96, "policy_candidates":12, "benchmark_learners":64}, results), **results}
