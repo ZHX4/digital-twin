@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any
 from dataclasses import asdict
 
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse, JSONResponse
 
 from .experiments import calibration_lab, compare_scenarios, counterfactual_lab, fairness_lab, genomic_ablation, sensitivity_analysis
@@ -32,13 +32,26 @@ def index() -> FileResponse:
     return FileResponse(STATIC_DIR / "lab.html")
 
 
+def _validate_policy(policy: str) -> str:
+    if policy not in POLICIES:
+        raise HTTPException(status_code=422, detail=f"Unknown policy: {policy}")
+    return policy
+
+
+def _validate_scenario(scenario: str) -> str:
+    if scenario not in SCENARIO_PARAMS:
+        raise HTTPException(status_code=422, detail=f"Unknown scenario: {scenario}")
+    return scenario
+
+
 @app.get("/api/simulate")
 def api_simulate(seed: int = Query(42, ge=0, le=99999999), name: str = Query("Astra", min_length=1, max_length=48),
     scenario: str = Query("global_digital_twin"), acceleration: float | None = Query(None, ge=0, le=1),
     exploration: float | None = Query(None, ge=0, le=1), mentorship: float | None = Query(None, ge=0, le=1),
     environment: float | None = Query(None, ge=0, le=1), genomic_weight: float | None = Query(None, ge=0, le=0.15),
     horizon: int = Query(16, ge=6, le=20)) -> JSONResponse:
-    defaults = SCENARIO_PARAMS.get(scenario, SCENARIO_PARAMS["global_digital_twin"])
+    scenario = _validate_scenario(scenario)
+    defaults = SCENARIO_PARAMS[scenario]
     cfg = ChildConfig(seed=seed, name=name, scenario=scenario,
         acceleration=defaults["acceleration"] if acceleration is None else acceleration,
         exploration=defaults["exploration"] if exploration is None else exploration,
@@ -51,7 +64,7 @@ def api_simulate(seed: int = Query(42, ge=0, le=99999999), name: str = Query("As
 @app.get("/api/cohort")
 def api_cohort(seed: int = 42, size: int = Query(64, ge=8, le=500), scenario: str = "global_digital_twin") -> dict:
     from .experiments import run_cohort
-    return run_cohort(seed, size, scenario)
+    return run_cohort(seed, size, _validate_scenario(scenario))
 
 
 @app.get("/api/compare")
@@ -92,7 +105,7 @@ def api_calibration(seed: int = 42, size: int = Query(72, ge=12, le=200)) -> dic
 @app.get("/api/world/simulate")
 def api_world_simulate(seed: int = 42, learners: int = Query(128, ge=8, le=2000), years: int = Query(12, ge=4, le=20),
                        policy: str = "digital_twin", trajectories: bool = False) -> dict:
-    return simulate_world(seed, learners=learners, years=years, policy_name=policy, return_trajectories=trajectories)
+    return simulate_world(seed, learners=learners, years=years, policy_name=_validate_policy(policy), return_trajectories=trajectories)
 
 
 @app.get("/api/world/policies")
@@ -103,7 +116,7 @@ def api_world_policies() -> dict:
 @app.get("/api/population")
 def api_population(seed: int = 42, learners: int = Query(512, ge=16, le=2000), years: int = Query(12, ge=4, le=20),
                    policy: str = "digital_twin") -> dict:
-    return run_population(seed, learners=learners, years=years, policy=policy, trajectories=False)
+    return run_population(seed, learners=learners, years=years, policy=_validate_policy(policy), trajectories=False)
 
 
 @app.get("/api/population/compare")
@@ -135,7 +148,7 @@ def api_model_registry() -> dict:
 @app.get("/api/monte-carlo")
 def api_monte_carlo(seed: int = 42, policy: str = "digital_twin", repetitions: int = Query(12, ge=4, le=64),
                    learners: int = Query(96, ge=16, le=512), years: int = Query(10, ge=4, le=16)) -> dict:
-    return monte_carlo_policy(seed, policy=policy, repetitions=repetitions, learners=learners, years=years)
+    return monte_carlo_policy(seed, policy=_validate_policy(policy), repetitions=repetitions, learners=learners, years=years)
 
 
 @app.get("/api/shift-demo")
