@@ -30,7 +30,6 @@ The v4 world remains synthetic. Its purpose is to make the assumptions of a futu
 
 > **A synthetic research laboratory for a future education system that models each learner as a continuously updated Digital Twin.**
 
-[![Research CI](https://github.com/ZHX4/Digital-Twin/actions/workflows/tests.yml/badge.svg)](https://github.com/ZHX4/Digital-Twin/actions/workflows/tests.yml)
 ![Python](https://img.shields.io/badge/python-3.10%2B-3776AB)
 ![FastAPI](https://img.shields.io/badge/API-FastAPI-009688)
 ![Status](https://img.shields.io/badge/status-research%20prototype-7B61FF)
