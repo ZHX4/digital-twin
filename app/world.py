@@ -110,8 +110,8 @@ def _candidate_actions(gaps: List[str], explore: float) -> List:
     return actions
 
 def simulate_world(seed: int = 42, learners: int = 128, years: int = 12, policy_name: str = "digital_twin",
-                   schools: int | None = None, return_trajectories: bool = True) -> Dict:
-    policy = POLICIES[policy_name]
+                   schools: int | None = None, return_trajectories: bool = True, policy_override: WorldPolicy | None = None) -> Dict:
+    policy = policy_override or POLICIES[policy_name]
     school_count = schools or max(3, min(16, learners // 16))
     school_objs: List[SchoolAgent] = []
     teacher_objs: List[TeacherAgent] = []
