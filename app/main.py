@@ -135,7 +135,7 @@ def metadata() -> dict[str, Any]:
 
 @app.get("/health")
 def health() -> dict[str, Any]:
-    return {"status": "ok", "service": "digital-twin", "version": "3.0.0", "research_mode": True}
+    return {"status": "ok", "service": "digital-twin", "version": "4.0.0", "research_mode": True}
 
 
 @app.get("/favicon.ico", include_in_schema=False)
