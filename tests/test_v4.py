@@ -1,6 +1,6 @@
 from app.benchmark import evaluate_benchmark
 from app.curriculum_agent import LinearUCBCurriculum
-from app.learner_model import competency_index, initial_state, learn
+from app.learner_model import initial_state, learn
 from app.policy_search import pareto_frontier, search_policies
 from app.population import bootstrap_ci, quantiles
 from app.world import POLICIES, simulate_world
@@ -65,8 +65,6 @@ def test_synthetic_benchmark():
 
 
 def test_policy_search_does_not_mutate_registry():
-    from app.policy_search import search_policies
-    from app.world import POLICIES
     before = tuple(sorted(POLICIES))
     result = search_policies(seed=2, candidates=3, learners=10, years=4)
     after = tuple(sorted(POLICIES))
@@ -75,17 +73,17 @@ def test_policy_search_does_not_mutate_registry():
 
 
 def test_research_manifest_contains_result_keys():
-    from app.research import run_research_pack
-    # Use a lightweight direct manifest construction to avoid running the full pack in unit tests.
     from app.research import manifest
+
     out = manifest("unit", 1, {"x": 1}, {"alpha": {}, "beta": {}})
     assert out["model_version"] == "4.0.0"
     assert out["result_keys"] == ["alpha", "beta"]
 
 
 def test_tutor_agent_targets_uncertainty():
-    from app.tutor import TutorAgent
     from app.learner_model import initial_state
+    from app.tutor import TutorAgent
+
     state = initial_state(42, "tutor-test", 0.7)
     state.uncertainty["probability"] = 0.9
     state.misconceptions["probability"] = 0.8
@@ -97,27 +95,7 @@ def test_tutor_agent_targets_uncertainty():
 def test_monte_carlo_and_shift():
     from app.population import monte_carlo_policy
     from app.shift import distribution_shift_report
-    mc = monte_carlo_policy(seed=4, policy="digital_twin", repetitions=4, learners=12, years=4)
-    assert mc["repetitions"] == 4
-    assert "competency_mean" in mc["metrics"]
-    report = distribution_shift_report({"x": [0, 1, 2, 3]}, {"x": [2, 3, 4, 5]})
-    assert report["aggregate_score"] > 0
 
-
-def test_tutor_agent_targets_uncertainty():
-    from app.tutor import TutorAgent
-    from app.learner_model import initial_state
-    state = initial_state(42, "tutor-test", 0.7)
-    state.uncertainty["probability"] = 0.9
-    state.misconceptions["probability"] = 0.8
-    intervention = TutorAgent().propose(state)
-    assert intervention.target_skill == "probability"
-    assert intervention.reversible
-
-
-def test_monte_carlo_and_shift():
-    from app.population import monte_carlo_policy
-    from app.shift import distribution_shift_report
     mc = monte_carlo_policy(seed=4, policy="digital_twin", repetitions=4, learners=12, years=4)
     assert mc["repetitions"] == 4
     assert "competency_mean" in mc["metrics"]
