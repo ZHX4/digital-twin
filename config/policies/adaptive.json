@@ -1,0 +1,11 @@
+{
+  "name": "adaptive",
+  "specialization_age": 11,
+  "acceleration": 0.56,
+  "exploration": 0.65,
+  "mentorship": 0.78,
+  "teacher_ratio": 16,
+  "resource_equalization": 0.35,
+  "tutor_enabled": true,
+  "core_ratio": 0.6
+}
