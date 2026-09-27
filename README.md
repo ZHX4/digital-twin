@@ -1,49 +1,32 @@
+# Digital Twin
 
 ## v4.0 — From Digital Twin to World Laboratory
 
-The repository now has an executable multi-scale layer above the original longitudinal twin:
+The project now has an executable multi-scale layer above the original longitudinal twin.
 
-- Latent learner model: explicit mastery, uncertainty, retention, misconceptions and cross-skill transfer.
-- Knowledge graph: prerequisite-linked skills instead of independent domain scores.
-- Contextual-bandit curriculum: linear-UCB planner chooses learning interventions from learner/environment context.
-- Multi-agent world: learners, families, teachers and schools interact over time.
-- Population simulation: hundreds/thousands of synthetic learners with quantiles and bootstrap intervals.
-- Education policy simulator: explicit policy objects rather than hard-coded scenarios.
-- Pareto policy search: learning, wellbeing, agency, equity, mismatch and inequality are treated as competing objectives.
-- Benchmark suite: reproducible learner-model comparison with Brier, accuracy and ECE diagnostics plus a real-data ingestion boundary.
-- Research dashboard: Twin, World, Policy Lab and Benchmark views are exposed from the default UI.
-
-### New research loop
-
-```text
-Learner state
-   ↓
-Curriculum action
-   ↓
-Teacher / school / family context
-   ↓
-Population trajectory
-   ↓
-Policy comparison
-   ↓
-Pareto frontier
-   ↓
-Counterfactual questions
-```
+- Latent learner state with mastery, uncertainty, retention, misconceptions and transfer.
+- Knowledge graph with prerequisite structure.
+- Linear-UCB contextual-bandit curriculum planner.
+- Multi-agent world with learners, families, teachers and schools.
+- Population simulation with quantiles and bootstrap intervals.
+- Explicit education policy objects and fixed-seed policy comparisons.
+- Pareto frontier search over learning, wellbeing, agency, equity, mismatch and inequality.
+- Benchmark suite with Brier, accuracy and ECE diagnostics.
+- Research dashboard with Twin, World, Policy Lab and Benchmark surfaces.
 
 The v4 world remains synthetic. Its purpose is to make the assumptions of a future education system executable and falsifiable before empirical calibration.
 
-### New endpoints
+### v4 endpoints
 
-- GET /api/world/simulate
-- GET /api/world/policies
-- GET /api/population
-- GET /api/population/compare
-- GET /api/policy-search
-- GET /api/benchmark
-- GET /api/research-pack
+- `/api/world/simulate`
+- `/api/world/policies`
+- `/api/population`
+- `/api/population/compare`
+- `/api/policy-search`
+- `/api/benchmark`
+- `/api/research-pack`
 
-# Digital Twin
+
 
 > **A synthetic research laboratory for a future education system that models each learner as a continuously updated Digital Twin.**
 
