@@ -1,0 +1,11 @@
+{
+  "name": "resource_balanced",
+  "specialization_age": 12,
+  "acceleration": 0.58,
+  "exploration": 0.72,
+  "mentorship": 0.84,
+  "teacher_ratio": 14,
+  "resource_equalization": 0.92,
+  "tutor_enabled": true,
+  "core_ratio": 0.62
+}
