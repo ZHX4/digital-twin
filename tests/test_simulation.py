@@ -29,4 +29,9 @@ def test_sensitivity_lab():
 def test_fairness_lab():
     r=fairness_lab(5,per_group=8);assert len(r["groups"])==3;assert "competency_age" in r["gaps"]
 def test_calibration_lab():
-    r=calibration_lab(5,size=12);assert r["n"]>0;assert 0<=r["brier_multiclass"]<=7;assert 0<=r["ece_top_class"]<=1
+    r=calibration_lab(5,size=12)
+    assert r["n"]>0
+    assert 0<=r["calibrated"]["brier_multiclass"]<=2
+    assert 0<=r["calibrated"]["ece_top_class"]<=1
+    assert 0<=r["raw"]["brier_multiclass"]<=2
+    assert 0<=r["raw"]["ece_top_class"]<=1
