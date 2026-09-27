@@ -26,7 +26,7 @@ app = FastAPI(title="Digital Twin — Human Development Research Laboratory", ve
 
 @app.get("/", include_in_schema=False)
 def index() -> FileResponse:
-    return FileResponse(STATIC_DIR / "index.html")
+    return FileResponse(STATIC_DIR / "lab.html")
 
 
 @app.get("/api/simulate")
