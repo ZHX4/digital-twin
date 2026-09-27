@@ -29,7 +29,7 @@ clean:
 	find . -type d -name .pytest_cache -prune -exec rm -rf {} +
 
 world:
-	python -m app.main
+	python -c "from app.world import simulate_world; import json; print(json.dumps(simulate_world(42,128,12,return_trajectories=False)[\"metrics\"], indent=2))"
 
 research-v4:
 	python scripts/run_research_pack.py --seed 42
