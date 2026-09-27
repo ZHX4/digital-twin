@@ -10,8 +10,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install -r requirements.txt
-      - run: python -m compileall -q app tests
+      - run: pip install -r requirements.txt ruff mypy bandit pip-audit
+      - run: python -m compileall -q app tests scripts
+      - run: ruff check app tests scripts
+      - run: mypy app
       - run: pytest -q
       - run: python scripts/run_experiment.py policy-comparison --size 8
       - run: python scripts/run_experiment.py sensitivity --samples 16
+      - run: python scripts/run_validation.py --seed 42 --seeds 2 --learners 16 --years 4
+      - run: pip-audit -r requirements.txt
+      - run: bandit -q -r app scripts -s B311
