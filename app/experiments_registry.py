@@ -17,4 +17,13 @@ EXPERIMENTS = {
     "calibration": {"title": "Posterior Calibration Lab",
         "question": "Are synthetic pathway confidence values calibrated to simulated future persistence?",
         "command": "python scripts/run_experiment.py calibration --size 128"},
+    "world_population": {"title": "Multi-Agent World Simulation",
+        "question": "How do learner trajectories change when families, teachers, schools and policies become explicit agents?",
+        "command": "python scripts/run_research_pack.py --seed 42"},
+    "policy_search": {"title": "Education Policy Pareto Search",
+        "question": "Which synthetic policy configurations are non-dominated across learning, wellbeing, agency, equity and mismatch?",
+        "command": "python -m app.research"},
+    "benchmark_suite": {"title": "Learner Model Benchmark",
+        "question": "How do learner-model baselines compare on prediction and calibration under reproducible synthetic interactions?",
+        "command": "python scripts/run_research_pack.py --seed 42"},
 }
