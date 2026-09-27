@@ -8,7 +8,7 @@ Evaluation branch: `evaluation/2026-09-27`
 
 Baseline main commit: `2dbf341b6c6ecb48b1d3028780d42dffe1986be0`
 
-Latest evaluation commit: `8abbc88191e8bef4f3e1de0e4549213f7af23e22`
+Latest evaluation commit: `Phase 3/4 branch tip after validation synchronization`
 
 The evaluation covered software correctness, API behavior, browser E2E, randomized invariants, maximum configured scale, HTTP performance, scientific diagnostics, static analysis, dependency security, and the repository's own research workflows.
 
@@ -50,7 +50,7 @@ The final branch now reports:
 - **Ruff: 0 findings**
 - **mypy: 0 errors**
 - `compileall`: PASS
-- **27 tests: PASS**
+- **64 tests: PASS**
 
 The type cleanup used explicit typed records for simulation outputs and benchmark interactions, explicit `ChildConfig` construction, and safer dictionary access patterns.
 
@@ -97,13 +97,15 @@ Temperature scaling improved both measured metrics, but calibration remains weak
 ### Static analysis
 
 - Ruff: PASS, 0 findings
-- mypy: PASS, 0 errors across 28 source files
+- mypy: PASS, 0 errors across 29 source files
 - compileall: PASS
 
 ### Unit/integration tests
 
-- pytest: **27 passed**
-- `make test`: **PASS**
+- pytest: **64 passed**
+- `make test`: **PASS`
+- `make research-v4`: **PASS**
+- `make validation`: **PASS**
 
 A FastAPI/Starlette deprecation warning remains in the test environment because the installed Starlette test client reports that direct httpx usage will change in a future version. This is a warning, not a test failure.
 
@@ -111,8 +113,8 @@ A FastAPI/Starlette deprecation warning remains in the test environment because 
 
 Final `pytest --cov=app`:
 
-- total statements: **1490**
-- missed: **67**
+- total statements: **1566**
+- missed: **62**
 - total coverage: **96%**
 
 Current lower-coverage areas include:
@@ -131,12 +133,7 @@ These represent testing opportunities rather than observed functional failures.
 - **PASS**
 - No known dependency vulnerabilities reported.
 
-Bandit:
-- **16 low-severity B311 findings**
-- 0 medium
-- 0 high
-
-The B311 findings are caused by deterministic `random.Random` use in simulation code. This is deliberate simulation randomness, not cryptographic randomness. Replacing it with a secure RNG would damage reproducibility rather than improve the intended simulation behavior. Explicit Bandit configuration can be added later.
+Bandit: **0 findings with B311 explicitly suppressed**. Before suppression, the only findings were low-severity B311 notices from deterministic `random.Random` used for reproducible simulation. No medium/high findings were present.
 
 ## Broader behavioral testing
 
@@ -215,9 +212,9 @@ A separate browser regression check confirmed that an invalid policy now returns
 
 ## Research workflows
 
-The repository's own workflows were executed after Phase 2:
+The repository's own workflows were executed after Phase 3/4:
 
-- `make test`: PASS — 27 tests
+- `make test`: PASS — 64 tests
 - `make research-v4`: PASS
 - research pack generation: PASS
 - policy comparison: PASS
@@ -254,19 +251,41 @@ Important limitations remain:
 - Calibration results are simulator diagnostics, not external validation.
 - The system must not be treated as a validated system for real children or real educational placement without external data, validated instruments, and independent ethical/causal evaluation.
 
+## Phase 3 scientific validation
+
+Phase 3 added boundary/invariant tests, paired genomic ablation, counterfactual separation tests, Monte Carlo convergence checks, deterministic confidence intervals, and calibration across four policies and multiple seeds.
+
+Across 8 seeds with 32 learners and an 8-year horizon, the synthetic digital-twin competency mean was **0.380962** with bootstrap 95% interval **[0.372623, 0.388553]**; wellbeing mean was **0.754025** with interval **[0.751637, 0.756138]**.
+
+The paired genomic-prior pathway-stability delta was **0.013664** with bootstrap 95% interval **[0.007264, 0.019034]**. This is an architectural ablation result only and is not evidence for real genetic utility.
+
+Monte Carlo competency intervals narrowed in the tested configuration from **[0.36960, 0.38745]** at 4 repetitions to **[0.37437, 0.38275]** at 16 repetitions.
+
+For `global_digital_twin`, mean multiclass Brier changed from **0.838612** raw to **0.809403** calibrated; top-class ECE changed from **0.747525** to **0.731768**. Calibration remains weak and simulator-internal.
+
+## Phase 4 engineering validation
+
+The API contract suite now covers valid endpoint requests, unknown policy/scenario values, numeric boundary inputs, response content types, and protection against HTTP 5xx responses. The CI workflow now runs Ruff, mypy, pytest, research smoke tests, the scientific validation runner, pip-audit, and Bandit.
+
+`results/scientific_validation.json` records the 8-seed validation artifact. Reproduce it with:
+
+`python scripts/run_validation.py --seed 42 --seeds 8 --learners 32 --years 8`
 ## Final state
 
-Phase 2 completed the planned engineering cleanup:
+Phases 2–4 completed the planned engineering and validation work:
 
 - the original API exception bug is fixed
 - Ruff is clean
 - mypy is clean
 - compilation is clean
-- all 27 tests pass
-- coverage remains 96%
+- all 64 tests pass
+- coverage remains 96% with 1,566 statements
 - dependency audit is clean
 - research workflows pass
 - repeated expensive deterministic calls are cached
 - calibration now uses an explicit multiclass next-year forecasting task with holdout temperature scaling
+- scientific validation includes multi-seed confidence intervals, paired ablation, Monte Carlo convergence, and cross-policy calibration
+- API contract and adversarial boundary tests are included
+- CI now runs static analysis, dependency security checks, and the scientific validation smoke suite
 
 The remaining engineering priorities are therefore concentrated in deeper empirical validation, additional coverage for low-tested modules, deployment architecture, and restoration of GitHub Actions runner availability.
