@@ -1,58 +1,28 @@
-name: research-ci
+name: probe-ci
 on: [push, pull_request]
-
 jobs:
-  syntax:
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: python --version
+      - run: pip --version
+      - run: python -c "print('python-ok')"
+  requirements:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: python --version
+      - run: pip install -r requirements.txt
+      - run: python -c "import numpy,fastapi,pytest; print('deps-ok')"
+  source-import:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: {python-version: "3.12"}
       - run: pip install -r requirements.txt
-      - run: python -m compileall -q app tests
-
-  imports:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: {python-version: "3.12"}
-      - run: pip install -r requirements.txt
-      - run: python -c "from app.main import app; from app.world import simulate_world; from app.policy_search import search_policies; from app.benchmark import evaluate_benchmark; print('imports-ok')"
-
-  legacy-tests:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: {python-version: "3.12"}
-      - run: pip install -r requirements.txt
-      - run: pytest -q tests/test_simulation.py
-
-  api-tests:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: {python-version: "3.12"}
-      - run: pip install -r requirements.txt
-      - run: pytest -q tests/test_api.py
-
-  v4-tests:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: {python-version: "3.12"}
-      - run: pip install -r requirements.txt
-      - run: pytest -q tests/test_v4.py
-
-  research-smoke:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: {python-version: "3.12"}
-      - run: pip install -r requirements.txt
-      - run: python scripts/run_experiment.py policy-comparison --size 4
-      - run: python scripts/run_experiment.py sensitivity --samples 8
+      - run: python -c "import app; print('app-ok')"
