@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"ImpactMetrics","type":"object","required":["competency_age","education_years","pathway_stability","mismatch_risk","exploration_coverage","wellbeing","agency","equity_index","opportunity_cost","calibration_error","uncertainty_at_gate"]}
