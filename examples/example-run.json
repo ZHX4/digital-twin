@@ -1,0 +1,6 @@
+{
+  "seed": 42,
+  "scenario": "global_digital_twin",
+  "question": "How does a longitudinal Digital Twin behave when exploration and mentorship are high?",
+  "status": "synthetic-example"
+}
