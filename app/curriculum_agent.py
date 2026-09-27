@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import math
+from collections.abc import Sequence
 from dataclasses import asdict, dataclass
-from typing import Dict, Iterable, List, Sequence
 
 import numpy as np
 
@@ -16,7 +16,7 @@ class LearningAction:
     exploration: float
     cost: float
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return asdict(self)
 
 
@@ -68,5 +68,5 @@ class LinearUCBCurriculum:
         self.b[aid] += context * float(reward)
         self.pulls[aid] += 1
 
-    def diagnostics(self) -> Dict:
+    def diagnostics(self) -> dict:
         return {"alpha": self.alpha, "actions": {k: {"pulls": v} for k, v in self.pulls.items()}}

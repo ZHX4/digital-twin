@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-from typing import Dict, List
-
 
 def safety_assessment(age: int, confidence: float, posterior_entropy: float, exploration_priority: float,
-                      genomic_weight: float, missingness: float = 0.0) -> Dict:
-    flags: List[str] = []
+                      genomic_weight: float, missingness: float = 0.0) -> dict:
+    flags: list[str] = []
     if age < 9:
         flags += ["NO_IRREVERSIBLE_DECISION", "HUMAN_REVIEW_REQUIRED"]
     if confidence < 0.55:

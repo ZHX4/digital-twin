@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, asdict
-from typing import Dict, Sequence
+from collections.abc import Sequence
+from dataclasses import asdict, dataclass
 
 from .curriculum_agent import DEFAULT_ACTIONS, LearningAction
 from .learner_model import LatentLearnerState, select_information_gap
@@ -16,7 +16,7 @@ class TutorIntervention:
     uncertainty: float
     reversible: bool = True
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return asdict(self)
 
 

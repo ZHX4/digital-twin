@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import random
+from collections.abc import Iterable, Sequence
 from statistics import mean
-from typing import Dict, Iterable, List, Sequence, Tuple
 
 from .world import POLICIES, simulate_world
 
-def quantiles(values: Sequence[float]) -> Dict[str, float]:
+
+def quantiles(values: Sequence[float]) -> dict[str, float]:
     if not values:
         return {"p05": 0.0, "p25": 0.0, "p50": 0.0, "p75": 0.0, "p95": 0.0}
     values = sorted(values)
@@ -17,7 +18,7 @@ def quantiles(values: Sequence[float]) -> Dict[str, float]:
         return values[lo] * (1 - frac) + values[hi] * frac
     return {f"p{int(p*100):02d}": round(q(p), 5) for p in (0.05, 0.25, 0.50, 0.75, 0.95)}
 
-def bootstrap_ci(values: Sequence[float], seed: int = 42, rounds: int = 400) -> Tuple[float, float]:
+def bootstrap_ci(values: Sequence[float], seed: int = 42, rounds: int = 400) -> tuple[float, float]:
     if not values:
         return 0.0, 0.0
     rng = random.Random(seed)
@@ -30,7 +31,7 @@ def bootstrap_ci(values: Sequence[float], seed: int = 42, rounds: int = 400) -> 
     return round(means[int(0.025 * rounds)], 5), round(means[int(0.975 * rounds) - 1], 5)
 
 def run_population(seed: int = 42, learners: int = 512, years: int = 12, policy: str = "digital_twin",
-                   trajectories: bool = False, policy_override=None) -> Dict:
+                   trajectories: bool = False, policy_override=None) -> dict:
     result = simulate_world(seed, learners=learners, years=years, policy_name=policy, return_trajectories=trajectories, policy_override=policy_override)
     competency = [row["competency"] for row in result["terminal"]]
     wellbeing = [row["wellbeing"] for row in result["terminal"]]
@@ -43,7 +44,7 @@ def run_population(seed: int = 42, learners: int = 512, years: int = 12, policy:
         },
     }
 
-def compare_population_policies(seed: int = 42, learners: int = 256, years: int = 12, policies: Iterable[str] | None = None) -> Dict:
+def compare_population_policies(seed: int = 42, learners: int = 256, years: int = 12, policies: Iterable[str] | None = None) -> dict:
     policies = list(policies or POLICIES.keys())
     rows = {}
     for idx, policy in enumerate(policies):
@@ -52,7 +53,7 @@ def compare_population_policies(seed: int = 42, learners: int = 256, years: int 
 
 
 def monte_carlo_policy(seed: int = 42, policy: str = "digital_twin", repetitions: int = 12,
-                       learners: int = 96, years: int = 10) -> Dict:
+                       learners: int = 96, years: int = 10) -> dict:
     runs = []
     for i in range(repetitions):
         result = run_population(seed + i * 10007, learners=learners, years=years, policy=policy, trajectories=False)

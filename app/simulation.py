@@ -1,20 +1,30 @@
 from __future__ import annotations
 
 import random
-from collections import Counter
 from statistics import mean
-from typing import Dict, List
 
 from .camps import choose_exploration_domains, run_camps
 from .environment import environment_profile, wellbeing_delta
 from .ethics import safety_assessment
 from .genetics import generate_genome
-from .learning import apply_forgetting, apply_learning, initialize_skill_state, select_curriculum
+from .learning import (
+    apply_forgetting,
+    apply_learning,
+    initialize_skill_state,
+    select_curriculum,
+)
 from .life_course import simulate_life_course
 from .market import market_snapshot
 from .models import (
-    AssessmentResult, ChildConfig, Evidence, ImpactMetrics, SCENARIOS, SCENARIO_PARAMS,
-    Recommendation, TwinState, YearRecord,
+    SCENARIO_PARAMS,
+    SCENARIOS,
+    AssessmentResult,
+    ChildConfig,
+    Evidence,
+    ImpactMetrics,
+    Recommendation,
+    TwinState,
+    YearRecord,
 )
 from .psychometrics import adaptive_assessment
 from .recommendation import pathway_posteriors, recommend
@@ -24,16 +34,16 @@ def _clip(x: float) -> float:
     return max(0.0, min(1.0, x))
 
 
-def _mean(values: Dict[str, float]) -> float:
+def _mean(values: dict[str, float]) -> float:
     return sum(values.values()) / max(1, len(values))
 
 
-def _initial_interests(rng: random.Random, latents: Dict[str, float], curiosity: float) -> Dict[str, float]:
+def _initial_interests(rng: random.Random, latents: dict[str, float], curiosity: float) -> dict[str, float]:
     return {d: _clip(0.30 + (0.42 + 0.18 * curiosity) * latents[d] + rng.gauss(0, 0.10)) for d in latents}
 
 
-def _update_capabilities(current: Dict[str, float], latent: Dict[str, float], env: Dict[str, float], cfg: ChildConfig,
-                         interests: Dict[str, float], rng: random.Random, age: int) -> Dict[str, float]:
+def _update_capabilities(current: dict[str, float], latent: dict[str, float], env: dict[str, float], cfg: ChildConfig,
+                         interests: dict[str, float], rng: random.Random, age: int) -> dict[str, float]:
     out = {}
     maturity = min(1.0, age / 12.0)
     prior_pull_scale = 0.004 * (cfg.genomic_weight / 0.05)
@@ -48,10 +58,10 @@ def _update_capabilities(current: Dict[str, float], latent: Dict[str, float], en
     return out
 
 
-def _evidence_domains(capabilities: Dict[str, float], uncertainties: Dict[str, float], interests: Dict[str, float]) -> List[str]:
+def _evidence_domains(capabilities: dict[str, float], uncertainties: dict[str, float], interests: dict[str, float]) -> list[str]:
     scored = []
-    for domain in capabilities:
-        score = 0.40 * uncertainties[domain] + 0.35 * interests[domain] + 0.25 * (1 - capabilities[domain])
+    for domain, capability in capabilities.items():
+        score = 0.40 * uncertainties[domain] + 0.35 * interests[domain] + 0.25 * (1 - capability)
         scored.append((score, domain))
     scored.sort(reverse=True)
     return [d for _, d in scored[:5]]
@@ -86,29 +96,29 @@ def _run_one(cfg: ChildConfig, include_experiments: bool = True) -> TwinState:
     interests = _initial_interests(rng, genome.synthetic_latents, cfg.curiosity)
     capabilities = {d: _clip(0.28 + 0.30 * genome.synthetic_latents[d] + rng.gauss(0, 0.025)) for d in genome.synthetic_latents}
     uncertainties = dict(genome.uncertainty)
-    evidence: List[Evidence] = []
-    assessments: List[AssessmentResult] = []
+    evidence: list[Evidence] = []
+    assessments: list[AssessmentResult] = []
     camps = []
-    recommendations: List[Recommendation] = []
+    recommendations: list[Recommendation] = []
     posterior_rows = []
-    curriculum: Dict[int, List] = {}
-    years: List[YearRecord] = []
-    audit_log: List[Dict] = []
-    capability_history: Dict[int, Dict] = {}
+    curriculum: dict[int, list] = {}
+    years: list[YearRecord] = []
+    audit_log: list[dict] = []
+    capability_history: dict[int, dict] = {}
     skill_states = initialize_skill_state(capabilities)
-    skill_history: Dict[int, Dict] = {}
+    skill_history: dict[int, dict] = {}
     wellbeing = 0.71
     engagement = 0.68
     previous_path = None
-    stability_samples: List[float] = []
+    stability_samples: list[float] = []
     total_hours = 0.0
     projects = 0
     camp_count = 0
     competency_age = float(cfg.horizon)
     gate_reached = False
-    market_history: Dict[int, Dict] = {}
-    top_path_predictions: List[float] = []
-    synthetic_outcomes: List[float] = []
+    market_history: dict[int, dict] = {}
+    top_path_predictions: list[float] = []
+    synthetic_outcomes: list[float] = []
 
     for age in range(cfg.horizon + 1):
         skill_states = apply_forgetting(skill_states, months=12.0 if age > 0 else 0.0)
@@ -175,7 +185,7 @@ def _run_one(cfg: ChildConfig, include_experiments: bool = True) -> TwinState:
 
         self_reg = capabilities["self_regulation"]
         wellbeing = _clip(wellbeing + wellbeing_delta(env, engagement, self_reg, cfg.acceleration))
-        leading_interest = max(interests, key=interests.get)
+        leading_interest = max(interests, key=lambda domain: interests[domain])
         engagement = _clip(0.60 * engagement + 0.26 * interests[leading_interest] + 0.14 * env["autonomy"] - 0.04 * env["pressure"])
 
         capability_history[age] = {
@@ -223,7 +233,7 @@ def _run_one(cfg: ChildConfig, include_experiments: bool = True) -> TwinState:
     final_rec = recommendations[-1]
     pathway_stability = mean(stability_samples) if stability_samples else 0.0
     mismatch = _clip(0.46 - 0.25 * pathway_stability - 0.12 * final_rec.confidence + 0.10 * final_rec.exploration_priority)
-    exploration_coverage = min(1.0, len(set(c.domain for c in camps)) / 8.0)
+    exploration_coverage = min(1.0, len({c.domain for c in camps}) / 8.0)
     uncertainty_gate = years[int(competency_age)].uncertainty_index if int(competency_age) < len(years) else years[-1].uncertainty_index
 
     impact = ImpactMetrics(

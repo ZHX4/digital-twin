@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import replace
-from typing import Dict, Iterable
 
 
 def policy_overrides(base_cfg, **changes):
@@ -15,7 +15,7 @@ def ate(results_treated: Iterable[float], results_control: Iterable[float]) -> f
     return sum(t) / len(t) - sum(c) / len(c)
 
 
-def counterfactual_summary(base_result: Dict, treated_result: Dict, metrics: Iterable[str]) -> Dict:
+def counterfactual_summary(base_result: dict, treated_result: dict, metrics: Iterable[str]) -> dict:
     effects = {}
     for metric in metrics:
         b = base_result.get("impact", {}).get(metric)

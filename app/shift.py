@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-import math
+from collections.abc import Sequence
 from statistics import mean, pstdev
-from typing import Dict, Sequence
 
 
 def standardized_shift(reference: Sequence[float], current: Sequence[float]) -> float:
@@ -13,8 +12,8 @@ def standardized_shift(reference: Sequence[float], current: Sequence[float]) -> 
     return round(abs(mean(current) - mu) / sigma, 5)
 
 
-def distribution_shift_report(reference: Dict[str, Sequence[float]], current: Dict[str, Sequence[float]],
-                              threshold: float = 0.75) -> Dict:
+def distribution_shift_report(reference: dict[str, Sequence[float]], current: dict[str, Sequence[float]],
+                              threshold: float = 0.75) -> dict:
     scores = {}
     for feature in sorted(set(reference) & set(current)):
         scores[feature] = standardized_shift(reference[feature], current[feature])
@@ -28,7 +27,7 @@ def distribution_shift_report(reference: Dict[str, Sequence[float]], current: Di
     }
 
 
-def conformal_interval(values: Sequence[float], alpha: float = 0.10) -> Dict[str, float]:
+def conformal_interval(values: Sequence[float], alpha: float = 0.10) -> dict[str, float]:
     if not values:
         return {"lower": 0.0, "upper": 0.0, "coverage_target": 1.0 - alpha}
     values = sorted(values)

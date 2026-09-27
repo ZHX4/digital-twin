@@ -3,9 +3,8 @@ from __future__ import annotations
 import math
 import random
 from dataclasses import asdict, dataclass, field
-from typing import Dict, Iterable, List, Mapping, Tuple
 
-SKILL_GRAPH: Dict[str, List[str]] = {
+SKILL_GRAPH: dict[str, list[str]] = {
     "numeracy": [],
     "algebra": ["numeracy"],
     "functions": ["algebra"],
@@ -26,7 +25,7 @@ SKILL_GRAPH: Dict[str, List[str]] = {
     "metacognition": [],
 }
 
-TRANSFER_EDGES: Dict[Tuple[str, str], float] = {
+TRANSFER_EDGES: dict[tuple[str, str], float] = {
     ("algebra", "programming"): 0.08,
     ("functions", "systems_engineering"): 0.12,
     ("calculus", "optimization"): 0.16,
@@ -42,16 +41,16 @@ TRANSFER_EDGES: Dict[Tuple[str, str], float] = {
 class LatentLearnerState:
     learner_id: str
     age: int
-    mastery: Dict[str, float]
-    uncertainty: Dict[str, float]
-    interests: Dict[str, float]
+    mastery: dict[str, float]
+    uncertainty: dict[str, float]
+    interests: dict[str, float]
     wellbeing: float
     agency: float
-    retention: Dict[str, float]
-    misconceptions: Dict[str, float] = field(default_factory=dict)
+    retention: dict[str, float]
+    misconceptions: dict[str, float] = field(default_factory=dict)
     evidence_count: int = 0
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return asdict(self)
 
 
@@ -137,7 +136,7 @@ def forget(state: LatentLearnerState, years: float = 1.0) -> None:
     state.wellbeing = round(_clip(state.wellbeing - 0.003 * years), 5)
 
 
-def select_information_gap(state: LatentLearnerState, top_k: int = 4) -> List[str]:
+def select_information_gap(state: LatentLearnerState, top_k: int = 4) -> list[str]:
     scored = []
     for skill in SKILL_GRAPH:
         gap = 1.0 - state.mastery.get(skill, 0.0)

@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import random
 from dataclasses import asdict
-from typing import Dict, Iterable, List
+from functools import lru_cache
 
 from .population import run_population
 from .world import POLICIES, WorldPolicy
 
-def _score(row: Dict) -> Dict[str, float]:
+
+def _score(row: dict) -> dict[str, float]:
     m = row["world"]["metrics"]
     inequality = row["world"]["inequality"]
     return {
@@ -20,7 +21,7 @@ def _score(row: Dict) -> Dict[str, float]:
         "cost_proxy": 1.0 - m["equity_index"],
     }
 
-def _dominates(a: Dict[str, float], b: Dict[str, float]) -> bool:
+def _dominates(a: dict[str, float], b: dict[str, float]) -> bool:
     maximize = ["learning", "wellbeing", "agency", "equity"]
     minimize = ["mismatch", "inequality", "cost_proxy"]
     return (
@@ -29,7 +30,7 @@ def _dominates(a: Dict[str, float], b: Dict[str, float]) -> bool:
         and any(a[k] != b[k] for k in maximize + minimize)
     )
 
-def pareto_frontier(rows: List[Dict]) -> List[Dict]:
+def pareto_frontier(rows: list[dict]) -> list[dict]:
     frontier = []
     for i, row in enumerate(rows):
         if not any(_dominates(other["objectives"], row["objectives"]) for j, other in enumerate(rows) if i != j):
@@ -50,7 +51,8 @@ def _candidate(name: str, rng: random.Random, baseline: WorldPolicy) -> WorldPol
         objective_profile=baseline.objective_profile,
     )
 
-def search_policies(seed: int = 42, candidates: int = 24, learners: int = 96, years: int = 10) -> Dict:
+@lru_cache(maxsize=32)
+def search_policies(seed: int = 42, candidates: int = 24, learners: int = 96, years: int = 10) -> dict:
     rng = random.Random(seed)
     rows = []
     for i in range(candidates):

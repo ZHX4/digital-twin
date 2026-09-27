@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import random
-from typing import Dict
 
 import numpy as np
 
@@ -19,7 +18,7 @@ def _clip(x: float) -> float:
 def generate_genome(rng: random.Random, prior_strength: float = 0.05) -> Genome:
     markers = {m: rng.choice(BASES) for m in MARKERS}
     vector = np.array([BASES.index(markers[m]) / 3.0 for m in MARKERS], dtype=float)
-    factors: Dict[str, float] = {}
+    factors: dict[str, float] = {}
     for i, factor in enumerate(FACTOR_NAMES):
         idx = np.arange(i % 6, len(vector), 6)
         factors[factor] = round(_clip(0.25 + 0.55 * float(np.mean(vector[idx])) + rng.gauss(0, 0.035)), 4)

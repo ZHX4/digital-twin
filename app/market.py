@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import math
 import random
-from typing import Dict
 
 PATHWAY_BASE = {
     "AI & Machine Learning": {"demand": 0.84, "mobility": 0.92, "automation": 0.77, "research": 0.90},
@@ -15,7 +14,7 @@ PATHWAY_BASE = {
 }
 
 
-def market_snapshot(seed: int, year: int = 2040) -> Dict[str, Dict[str, float]]:
+def market_snapshot(seed: int, year: int = 2040) -> dict[str, dict[str, float]]:
     rng = random.Random(seed + year * 17)
     shock = 0.06 * math.sin(year / 3.0 + rng.random())
     snapshot = {}
@@ -27,5 +26,5 @@ def market_snapshot(seed: int, year: int = 2040) -> Dict[str, Dict[str, float]]:
     return snapshot
 
 
-def market_series(seed: int, start: int = 2025, end: int = 2045) -> Dict[int, Dict[str, Dict[str, float]]]:
+def market_series(seed: int, start: int = 2025, end: int = 2045) -> dict[int, dict[str, dict[str, float]]]:
     return {year: market_snapshot(seed + year, year) for year in range(start, end + 1)}

@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import math
 from statistics import mean
-from typing import Dict, List
 
-from .models import CampResult, Evidence, PATHWAYS, PathwayPosterior, Recommendation
+from .models import PATHWAYS, CampResult, Evidence, PathwayPosterior, Recommendation
 
 
-def _softmax(scores: Dict[str, float], temperature: float) -> Dict[str, float]:
+def _softmax(scores: dict[str, float], temperature: float) -> dict[str, float]:
     t = max(0.08, temperature)
     m = max(scores.values())
     exps = {k: math.exp((v - m) / t) for k, v in scores.items()}
@@ -15,15 +14,15 @@ def _softmax(scores: Dict[str, float], temperature: float) -> Dict[str, float]:
     return {k: v / z for k, v in exps.items()}
 
 
-def entropy(probs: Dict[str, float]) -> float:
+def entropy(probs: dict[str, float]) -> float:
     return -sum(p * math.log(max(p, 1e-12)) for p in probs.values())
 
 
-def recommend(age: int, capabilities: Dict[str, float], uncertainties: Dict[str, float], interests: Dict[str, float],
-              evidence: List[Evidence], camps: List[CampResult], mentorship: float, exploration: float,
-              market: Dict[str, Dict[str, float]] | None = None, genomic_weight: float = 0.0,
-              genomic_latents: Dict[str, float] | None = None) -> Recommendation:
-    raw: Dict[str, float] = {}
+def recommend(age: int, capabilities: dict[str, float], uncertainties: dict[str, float], interests: dict[str, float],
+              evidence: list[Evidence], camps: list[CampResult], mentorship: float, exploration: float,
+              market: dict[str, dict[str, float]] | None = None, genomic_weight: float = 0.0,
+              genomic_latents: dict[str, float] | None = None) -> Recommendation:
+    raw: dict[str, float] = {}
     for path, domains in PATHWAYS.items():
         cap = mean(capabilities[d] for d in domains)
         interest = mean(interests.get(d, 0.5) for d in domains)
@@ -38,7 +37,7 @@ def recommend(age: int, capabilities: Dict[str, float], uncertainties: Dict[str,
             + 0.07 * mentorship + 0.05 * market_score + genomic_weight * (genomic - 0.5) - 0.11 * unc)
     temp = 1.25 if age < 7 else 0.92 if age < 10 else 0.62 if age < 13 else 0.38
     probs = _softmax(raw, temp)
-    path = max(probs, key=probs.get)
+    path = max(probs, key=lambda name: probs[name])
     h = entropy(probs)
     normalized_h = h / math.log(max(2, len(probs)))
     uncertainty = 0.50 * normalized_h + 0.50 * mean(uncertainties[d] for d in PATHWAYS[path])
@@ -59,7 +58,7 @@ def recommend(age: int, capabilities: Dict[str, float], uncertainties: Dict[str,
         rationale=rationale, safety_flags=flags)
 
 
-def pathway_posteriors(age: int, rec: Recommendation, evidence_strength: float) -> List[PathwayPosterior]:
+def pathway_posteriors(age: int, rec: Recommendation, evidence_strength: float) -> list[PathwayPosterior]:
     rows = []
     max_h = math.log(7)
     for path, p in rec.ranked_pathways.items():

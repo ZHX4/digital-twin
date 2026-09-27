@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import random
-from typing import Dict, Iterable, List
+from collections.abc import Iterable
 
-from .models import CampResult, DOMAINS
+from .models import DOMAINS, CampResult
 
 CAMP_LIBRARY = {
     "robotics": "Robotics Systems Camp", "biology": "Life Science Lab", "mathematics": "Mathematical Discovery Lab",
@@ -18,8 +18,8 @@ def information_gain(prior: float, posterior: float, uncertainty: float) -> floa
     return max(0.0, min(1.0, 0.7 * change + 0.3 * uncertainty))
 
 
-def run_camps(age: int, capabilities: Dict[str, float], interests: Dict[str, float], domains: Iterable[str], rng: random.Random) -> List[CampResult]:
-    results: List[CampResult] = []
+def run_camps(age: int, capabilities: dict[str, float], interests: dict[str, float], domains: Iterable[str], rng: random.Random) -> list[CampResult]:
+    results: list[CampResult] = []
     for domain in domains:
         if domain not in DOMAINS:
             continue
@@ -35,7 +35,7 @@ def run_camps(age: int, capabilities: Dict[str, float], interests: Dict[str, flo
     return results
 
 
-def choose_exploration_domains(capabilities: Dict[str, float], interests: Dict[str, float], uncertainties: Dict[str, float], count: int = 4) -> List[str]:
+def choose_exploration_domains(capabilities: dict[str, float], interests: dict[str, float], uncertainties: dict[str, float], count: int = 4) -> list[str]:
     scored = []
     for domain in DOMAINS:
         if domain == "self_regulation":

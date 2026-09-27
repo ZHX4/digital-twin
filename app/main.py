@@ -1,24 +1,30 @@
 from __future__ import annotations
 
+from dataclasses import asdict
 from pathlib import Path
 from typing import Any
-from dataclasses import asdict
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse, JSONResponse
 
-from .experiments import calibration_lab, compare_scenarios, counterfactual_lab, fairness_lab, genomic_ablation, sensitivity_analysis
 from .benchmark import evaluate_benchmark
-from .population import run_population, compare_population_policies
-from .policy_search import search_policies
-from .world import POLICIES, simulate_world
-from .research import run_research_pack
-from .model_registry import registry as model_registry
-from .population import monte_carlo_policy
-from .shift import distribution_shift_report
+from .experiments import (
+    calibration_lab,
+    compare_scenarios,
+    counterfactual_lab,
+    fairness_lab,
+    genomic_ablation,
+    sensitivity_analysis,
+)
 from .experiments_registry import EXPERIMENTS
-from .models import ChildConfig, PATHWAYS, SCENARIOS, SCENARIO_PARAMS
+from .model_registry import registry as model_registry
+from .models import PATHWAYS, SCENARIO_PARAMS, SCENARIOS, ChildConfig
+from .policy_search import search_policies
+from .population import compare_population_policies, monte_carlo_policy, run_population
+from .research import run_research_pack
+from .shift import distribution_shift_report
 from .simulation import simulate
+from .world import POLICIES, simulate_world
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"

@@ -1,15 +1,14 @@
 from __future__ import annotations
 
 import random
-from typing import Dict
 
 from .market import market_snapshot
 
 
 def simulate_life_course(seed: int, start_age: int, end_age: int, pathway: str, competency: float,
-                         wellbeing: float, persistence: float) -> Dict[int, Dict]:
+                         wellbeing: float, persistence: float) -> dict[int, dict]:
     rng = random.Random(seed + 9187)
-    rows: Dict[int, Dict] = {}
+    rows: dict[int, dict] = {}
     skill = max(0.25, min(1.0, competency))
     burnout = 0.0
     role = "learner"

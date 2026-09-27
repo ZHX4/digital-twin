@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import math
 import random
+from collections.abc import Iterable
 from statistics import mean
-from typing import Dict, Iterable, List
 
 from .models import AssessmentResult
 
@@ -36,7 +36,7 @@ def adaptive_assessment(age: int, domain: str, mastery: float, uncertainty: floa
     """Synthetic IRT/CAT-style measurement with deterministic seeds."""
     theta_true = -3.0 + 6.0 * mastery
     theta = 0.0
-    responses: List[bool] = []
+    responses: list[bool] = []
     information = 0.0
     for _ in range(max_items):
         difficulty = max(-2.4, min(2.4, theta + rng.gauss(0, 0.55 * (0.7 + uncertainty))))
@@ -59,8 +59,8 @@ def adaptive_assessment(age: int, domain: str, mastery: float, uncertainty: floa
         instrument="synthetic_irt_cat_v1")
 
 
-def reliability_bins(predictions: Iterable[float], outcomes: Iterable[float], bins: int = 10) -> List[Dict[str, float]]:
-    groups = [[] for _ in range(bins)]
+def reliability_bins(predictions: Iterable[float], outcomes: Iterable[float], bins: int = 10) -> list[dict[str, float]]:
+    groups: list[list[tuple[float, float]]] = [[] for _ in range(bins)]
     for p, y in zip(predictions, outcomes):
         idx = min(bins - 1, int(max(0, min(0.999999, p)) * bins))
         groups[idx].append((p, y))

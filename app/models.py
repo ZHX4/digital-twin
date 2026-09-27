@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
-from typing import Dict, List
 
 DOMAINS = [
     "mathematics", "programming", "physics", "biology", "language",
@@ -33,10 +32,10 @@ SCENARIOS = {
 }
 
 SCENARIO_PARAMS = {
-    "traditional": dict(acceleration=0.35, exploration=0.28, mentorship=0.45, environment_quality=0.72, genomic_weight=0.0),
-    "adaptive": dict(acceleration=0.60, exploration=0.68, mentorship=0.80, environment_quality=0.86, genomic_weight=0.0),
-    "genomic_adaptive": dict(acceleration=0.64, exploration=0.72, mentorship=0.84, environment_quality=0.88, genomic_weight=0.08),
-    "global_digital_twin": dict(acceleration=0.78, exploration=0.90, mentorship=0.94, environment_quality=0.94, genomic_weight=0.05),
+    "traditional": {"acceleration": 0.35, "exploration": 0.28, "mentorship": 0.45, "environment_quality": 0.72, "genomic_weight": 0.0},
+    "adaptive": {"acceleration": 0.60, "exploration": 0.68, "mentorship": 0.80, "environment_quality": 0.86, "genomic_weight": 0.0},
+    "genomic_adaptive": {"acceleration": 0.64, "exploration": 0.72, "mentorship": 0.84, "environment_quality": 0.88, "genomic_weight": 0.08},
+    "global_digital_twin": {"acceleration": 0.78, "exploration": 0.90, "mentorship": 0.94, "environment_quality": 0.94, "genomic_weight": 0.05},
 }
 
 
@@ -64,10 +63,10 @@ class ChildConfig:
 class Genome:
     model: str
     sequence_preview: str
-    markers: Dict[str, str]
-    synthetic_latents: Dict[str, float]
-    factor_latents: Dict[str, float]
-    uncertainty: Dict[str, float]
+    markers: dict[str, str]
+    synthetic_latents: dict[str, float]
+    factor_latents: dict[str, float]
+    uncertainty: dict[str, float]
     prior_strength: float
     disclaimer: str
 
@@ -105,7 +104,7 @@ class SkillState:
     uncertainty: float
     velocity: float
     forgetting_rate: float
-    prerequisites: List[str] = field(default_factory=list)
+    prerequisites: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -115,7 +114,7 @@ class LearningUnit:
     domain: str
     level: int
     effort_hours: float
-    prerequisites: List[str]
+    prerequisites: list[str]
     competency_gain: float
     novelty: float
     social: float
@@ -146,9 +145,9 @@ class PathwayPosterior:
     evidence_strength: float
     recommended_action: str
     exploration_priority: float
-    contributing_domains: Dict[str, float]
-    rationale: List[str]
-    safety_flags: List[str]
+    contributing_domains: dict[str, float]
+    rationale: list[str]
+    safety_flags: list[str]
 
 
 @dataclass
@@ -158,10 +157,10 @@ class Recommendation:
     score: float
     confidence: float
     exploration_priority: float
-    contributing_domains: Dict[str, float]
-    ranked_pathways: Dict[str, float]
-    rationale: List[str]
-    safety_flags: List[str]
+    contributing_domains: dict[str, float]
+    ranked_pathways: dict[str, float]
+    rationale: list[str]
+    safety_flags: list[str]
 
 
 @dataclass
@@ -180,7 +179,7 @@ class YearRecord:
     camps_completed: int
     evidence_count: int
     skill_count: int
-    notes: List[str] = field(default_factory=list)
+    notes: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -200,24 +199,24 @@ class ImpactMetrics:
 
 @dataclass
 class TwinState:
-    identity: Dict
+    identity: dict
     genome: Genome
-    capabilities: Dict[int, Dict]
-    skills: Dict[int, Dict]
-    evidence: List[Evidence]
-    assessments: List[AssessmentResult]
-    camps: List[CampResult]
-    recommendations: List[Recommendation]
-    pathway_posteriors: List[PathwayPosterior]
-    curriculum: Dict[int, List[LearningUnit]]
-    years: List[YearRecord]
+    capabilities: dict[int, dict]
+    skills: dict[int, dict]
+    evidence: list[Evidence]
+    assessments: list[AssessmentResult]
+    camps: list[CampResult]
+    recommendations: list[Recommendation]
+    pathway_posteriors: list[PathwayPosterior]
+    curriculum: dict[int, list[LearningUnit]]
+    years: list[YearRecord]
     impact: ImpactMetrics
-    market: Dict[int, Dict]
-    life_course: Dict[int, Dict]
-    experiments: Dict
-    audit_log: List[Dict]
-    limitations: List[str]
+    market: dict[int, dict]
+    life_course: dict[int, dict]
+    experiments: dict
+    audit_log: list[dict]
+    limitations: list[str]
     scenario_description: str
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return asdict(self)

@@ -1,11 +1,11 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from statistics import mean
-from typing import Dict, Iterable, List
 
 
-def group_metrics(rows: Iterable[Dict]) -> Dict[str, Dict[str, float]]:
-    groups: Dict[str, List[Dict]] = {}
+def group_metrics(rows: Iterable[dict]) -> dict[str, dict[str, float]]:
+    groups: dict[str, list[dict]] = {}
     for row in rows:
         groups.setdefault(row["group"], []).append(row)
     out = {}
@@ -20,6 +20,6 @@ def group_metrics(rows: Iterable[Dict]) -> Dict[str, Dict[str, float]]:
     return out
 
 
-def fairness_gap(groups: Dict[str, Dict[str, float]], metric: str) -> float:
+def fairness_gap(groups: dict[str, dict[str, float]], metric: str) -> float:
     values = [g[metric] for g in groups.values()]
     return round(max(values) - min(values), 4) if values else 0.0

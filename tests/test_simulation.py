@@ -1,6 +1,15 @@
-from app.experiments import calibration_lab,compare_scenarios,counterfactual_lab,fairness_lab,genomic_ablation,sensitivity_analysis
+from app.experiments import (
+    calibration_lab,
+    compare_scenarios,
+    counterfactual_lab,
+    fairness_lab,
+    genomic_ablation,
+    sensitivity_analysis,
+)
 from app.models import ChildConfig
 from app.simulation import simulate
+
+
 def test_reproducible_lifecycle():
     a=simulate(ChildConfig(seed=42)).to_dict();b=simulate(ChildConfig(seed=42)).to_dict();assert a==b;assert len(a["years"])==17
 def test_research_layers_exist():
@@ -20,4 +29,4 @@ def test_sensitivity_lab():
 def test_fairness_lab():
     r=fairness_lab(5,per_group=8);assert len(r["groups"])==3;assert "competency_age" in r["gaps"]
 def test_calibration_lab():
-    r=calibration_lab(5,size=12);assert r["n"]>0;assert 0<=r["brier"]<=1;assert 0<=r["ece"]<=1
+    r=calibration_lab(5,size=12);assert r["n"]>0;assert 0<=r["brier_multiclass"]<=7;assert 0<=r["ece_top_class"]<=1

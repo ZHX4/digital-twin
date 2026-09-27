@@ -4,12 +4,18 @@ import hashlib
 import random
 from dataclasses import asdict, dataclass
 from statistics import mean, median
-from typing import Dict, List, Tuple
+from typing import TypedDict
 
 from .curriculum_agent import LinearUCBCurriculum
-from .learner_model import LatentLearnerState, competency_index, initial_state, learn, select_information_gap
-from .tutor import TutorAgent
+from .learner_model import (
+    LatentLearnerState,
+    competency_index,
+    initial_state,
+    learn,
+    select_information_gap,
+)
 from .market import market_snapshot
+from .tutor import TutorAgent
 
 SKILL_TO_PATHWAY = {
     "machine_learning": "AI & Machine Learning",
@@ -74,6 +80,18 @@ class SchoolAgent:
     exploration_capacity: float
     culture: str
 
+
+class TerminalLearner(TypedDict):
+    learner_id: str
+    resource_access: float
+    resource_stratum: str
+    competency: float
+    wellbeing: float
+    agency: float
+    pathway: str
+    mismatch_risk: float
+    interventions: int
+
 def _stable_seed(*parts: object) -> int:
     raw = "|".join(map(str, parts)).encode()
     return int(hashlib.sha256(raw).hexdigest()[:12], 16)
@@ -86,11 +104,11 @@ def _stratum(x: float) -> str:
 def _school_culture(index: int) -> str:
     return ["research", "mastery", "community", "innovation"][index % 4]
 
-def _choose_pathway(state: LatentLearnerState, age: int, policy: WorldPolicy) -> Tuple[str | None, float]:
+def _choose_pathway(state: LatentLearnerState, age: int, policy: WorldPolicy) -> tuple[str | None, float]:
     if age < policy.specialization_age:
         return None, 0.0
     skill_scores = sorted(((v, SKILL_TO_PATHWAY.get(k)) for k, v in state.mastery.items() if k in SKILL_TO_PATHWAY), reverse=True)
-    votes: Dict[str, float] = {}
+    votes: dict[str, float] = {}
     for score, path in skill_scores:
         if path:
             votes[path] = votes.get(path, 0.0) + score
@@ -101,7 +119,7 @@ def _choose_pathway(state: LatentLearnerState, age: int, policy: WorldPolicy) ->
     confidence = score / total
     return path, confidence
 
-def _candidate_actions(gaps: List[str], explore: float) -> List:
+def _candidate_actions(gaps: list[str], explore: float) -> list:
     from .curriculum_agent import DEFAULT_ACTIONS
     actions = list(DEFAULT_ACTIONS)
     if explore < 0.45:
@@ -111,20 +129,20 @@ def _candidate_actions(gaps: List[str], explore: float) -> List:
     return actions
 
 def simulate_world(seed: int = 42, learners: int = 128, years: int = 12, policy_name: str = "digital_twin",
-                   schools: int | None = None, return_trajectories: bool = True, policy_override: WorldPolicy | None = None) -> Dict:
+                   schools: int | None = None, return_trajectories: bool = True, policy_override: WorldPolicy | None = None) -> dict:
     policy = policy_override or POLICIES[policy_name]
     school_count = schools or max(3, min(16, learners // 16))
-    school_objs: List[SchoolAgent] = []
-    teacher_objs: List[TeacherAgent] = []
-    family_objs: List[FamilyAgent] = []
-    learner_objs: List[LearnerAgent] = []
+    school_objs: list[SchoolAgent] = []
+    teacher_objs: list[TeacherAgent] = []
+    family_objs: list[FamilyAgent] = []
+    learner_objs: list[LearnerAgent] = []
     rng = random.Random(seed)
 
     for s in range(school_count):
         resources = max(0.35, min(0.98, 0.48 + 0.42 * rng.random()))
         school_objs.append(SchoolAgent(f"school-{s:03d}", resources, 0.82 + 0.15 * rng.random(),
                                        0.40 + 0.55 * rng.random(), _school_culture(s)))
-        teacher_count = max(2, int(round(25 / max(1.0, policy.teacher_ratio))))
+        teacher_count = max(2, round(25 / max(1.0, policy.teacher_ratio)))
         for t in range(teacher_count):
             teacher_objs.append(TeacherAgent(f"teacher-{s}-{t}", school_objs[-1].school_id,
                                              0.62 + 0.34 * rng.random(), policy.mentorship * (0.82 + 0.18 * rng.random())))
@@ -140,18 +158,18 @@ def simulate_world(seed: int = 42, learners: int = 128, years: int = 12, policy_
         learner_objs.append(LearnerAgent(f"learner-{i:05d}", school.school_id, family.family_id,
                                          round(resource_access, 4), state))
 
-    teachers_by_school: Dict[str, List[TeacherAgent]] = {}
+    teachers_by_school: dict[str, list[TeacherAgent]] = {}
     for teacher in teacher_objs:
         teachers_by_school.setdefault(teacher.school_id, []).append(teacher)
     schools_by_id = {s.school_id: s for s in school_objs}
     families_by_id = {f.family_id: f for f in family_objs}
     planners = {agent.learner_id: LinearUCBCurriculum(alpha=0.55) for agent in learner_objs}
     tutor = TutorAgent()
-    trajectories: List[Dict] = []
+    trajectories: list[dict] = []
 
     for year in range(years):
         age = 5 + year
-        snapshots = {agent.school_id: [] for agent in learner_objs}
+        snapshots: dict[str, list[float]] = {agent.school_id: [] for agent in learner_objs}
         for agent in learner_objs:
             snapshots[agent.school_id].append(competency_index(agent.state))
         school_peer = {sid: mean(values) if values else 0.5 for sid, values in snapshots.items()}
@@ -215,23 +233,28 @@ def simulate_world(seed: int = 42, learners: int = 128, years: int = 12, policy_
                     "school_resources": school.resources, "peer_effect": round(peer_effect, 5),
                 })
 
-    terminal = []
+    terminal: list[TerminalLearner] = []
     for agent in learner_objs:
         competency = competency_index(agent.state)
         path = agent.pathway or "Undifferentiated"
         mismatch = 1.0 - max(agent.state.interests.get(skill, 0.5) for skill, p in SKILL_TO_PATHWAY.items() if p == path) if path != "Undifferentiated" else 0.35
-        terminal.append({
-            "learner_id": agent.learner_id, "resource_access": agent.resource_access,
-            "resource_stratum": _stratum(agent.resource_access), "competency": round(competency, 4),
-            "wellbeing": round(agent.state.wellbeing, 4), "agency": round(agent.state.agency, 4),
-            "pathway": path, "mismatch_risk": round(max(0.0, min(1.0, mismatch)), 4),
+        row: TerminalLearner = {
+            "learner_id": agent.learner_id,
+            "resource_access": agent.resource_access,
+            "resource_stratum": _stratum(agent.resource_access),
+            "competency": round(competency, 4),
+            "wellbeing": round(agent.state.wellbeing, 4),
+            "agency": round(agent.state.agency, 4),
+            "pathway": path,
+            "mismatch_risk": round(max(0.0, min(1.0, mismatch)), 4),
             "interventions": agent.interventions,
-        })
+        }
+        terminal.append(row)
 
-    strata: Dict[str, List[Dict]] = {}
+    strata: dict[str, list[TerminalLearner]] = {}
     for row in terminal:
         strata.setdefault(row["resource_stratum"], []).append(row)
-    distribution = {
+    distribution: dict[str, dict[str, float | int]] = {
         key: {
             "n": len(rows),
             "competency_mean": round(mean(r["competency"] for r in rows), 4),
@@ -240,7 +263,7 @@ def simulate_world(seed: int = 42, learners: int = 128, years: int = 12, policy_
             "mismatch_mean": round(mean(r["mismatch_risk"] for r in rows), 4),
         } for key, rows in strata.items()
     }
-    inequality = {
+    inequality: dict[str, float] = {
         "competency_gap": round(max(x["competency_mean"] for x in distribution.values()) - min(x["competency_mean"] for x in distribution.values()), 4),
         "wellbeing_gap": round(max(x["wellbeing_mean"] for x in distribution.values()) - min(x["wellbeing_mean"] for x in distribution.values()), 4),
         "mismatch_gap": round(max(x["mismatch_mean"] for x in distribution.values()) - min(x["mismatch_mean"] for x in distribution.values()), 4),

@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict
-
-MODEL_REGISTRY: Dict[str, Dict] = {
+MODEL_REGISTRY: dict[str, dict] = {
     "learner.latent_state.v1": {
         "family": "probabilistic-state",
         "purpose": "Latent learner state, uncertainty, retention and misconceptions",
@@ -48,5 +46,5 @@ MODEL_REGISTRY: Dict[str, Dict] = {
 }
 
 
-def registry() -> Dict[str, Dict]:
+def registry() -> dict[str, dict]:
     return MODEL_REGISTRY

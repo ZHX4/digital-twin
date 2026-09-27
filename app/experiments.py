@@ -4,16 +4,15 @@ import math
 import random
 from dataclasses import asdict
 from statistics import mean, pstdev
-from typing import Dict, List
+from typing import Any
 
-from .calibration import evaluate as calibration_evaluate
 from .causal import counterfactual_summary, policy_overrides
 from .equity import fairness_gap, group_metrics
-from .models import ChildConfig, SCENARIO_PARAMS
+from .models import SCENARIO_PARAMS, ChildConfig
 from .simulation import simulate
 
 
-def summarize(values: List[float]) -> Dict[str, float]:
+def summarize(values: list[float]) -> dict[str, float]:
     if not values:
         return {"mean": 0.0, "std": 0.0, "min": 0.0, "max": 0.0}
     return {"mean": round(mean(values), 4), "std": round(pstdev(values), 4),
@@ -22,14 +21,21 @@ def summarize(values: List[float]) -> Dict[str, float]:
 
 def _cfg_for(seed: int, scenario: str, resource_access: float = 0.85) -> ChildConfig:
     p = SCENARIO_PARAMS[scenario]
-    return ChildConfig(seed=seed, scenario=scenario, resource_access=resource_access, **{
-        k: v for k, v in p.items() if k in {"acceleration", "exploration", "mentorship", "environment_quality", "genomic_weight"}
-    })
+    return ChildConfig(
+        seed=seed,
+        scenario=scenario,
+        acceleration=p["acceleration"],
+        exploration=p["exploration"],
+        mentorship=p["mentorship"],
+        environment_quality=p["environment_quality"],
+        genomic_weight=p["genomic_weight"],
+        resource_access=resource_access,
+    )
 
 
-def run_cohort(seed: int, size: int, scenario: str) -> Dict:
+def run_cohort(seed: int, size: int, scenario: str) -> dict:
     outcomes = []
-    pathway_counts: Dict[str, int] = {}
+    pathway_counts: dict[str, int] = {}
     rng = random.Random(seed)
     for _ in range(size):
         result = simulate(_cfg_for(rng.randint(0, 10_000_000), scenario), include_experiments=False)
@@ -43,14 +49,14 @@ def run_cohort(seed: int, size: int, scenario: str) -> Dict:
             "pathway_counts": pathway_counts}
 
 
-def compare_scenarios(seed: int, size: int = 48) -> Dict:
+def compare_scenarios(seed: int, size: int = 48) -> dict:
     scenarios = list(SCENARIO_PARAMS)
     return {s: run_cohort(seed + i * 1009, size, s) for i, s in enumerate(scenarios)}
 
 
-def counterfactual_lab(seed: int = 42) -> Dict:
+def counterfactual_lab(seed: int = 42) -> dict:
     base = simulate(_cfg_for(seed, "global_digital_twin"), include_experiments=False).to_dict()
-    interventions = {
+    interventions: dict[str, dict[str, Any]] = {
         "more_mentorship": {"mentorship": 1.0},
         "slower_acceleration": {"acceleration": 0.45},
         "more_exploration": {"exploration": 1.0},
@@ -68,7 +74,7 @@ def counterfactual_lab(seed: int = 42) -> Dict:
     return {"seed": seed, "baseline": base["impact"], "interventions": rows}
 
 
-def genomic_ablation(seed: int = 42, size: int = 48) -> Dict:
+def genomic_ablation(seed: int = 42, size: int = 48) -> dict:
     with_genome = run_cohort(seed, size, "genomic_adaptive")
     rng = random.Random(seed)
     metrics_with, metrics_without = [], []
@@ -91,17 +97,29 @@ def genomic_ablation(seed: int = 42, size: int = 48) -> Dict:
             "interpretation": "Synthetic architectural ablation only; not evidence for real genetic utility."}
 
 
-def sensitivity_analysis(seed: int = 42, samples: int = 96) -> Dict:
+def sensitivity_analysis(seed: int = 42, samples: int = 96) -> dict:
     rng = random.Random(seed)
     params = ["acceleration", "exploration", "mentorship", "environment_quality", "genomic_weight"]
-    rows = {p: [] for p in params}
+    rows: dict[str, list[tuple[float, float]]] = {p: [] for p in params}
     baseline = []
     terminal_mastery = []
     for _ in range(samples):
-        values = {"acceleration": rng.uniform(0.2, 0.95), "exploration": rng.uniform(0.2, 1.0),
-                  "mentorship": rng.uniform(0.35, 1.0), "environment_quality": rng.uniform(0.55, 1.0),
-                  "genomic_weight": rng.uniform(0.0, 0.10)}
-        cfg = ChildConfig(seed=rng.randint(0, 10_000_000), scenario="global_digital_twin", **values)
+        values: dict[str, float] = {
+            "acceleration": rng.uniform(0.2, 0.95),
+            "exploration": rng.uniform(0.2, 1.0),
+            "mentorship": rng.uniform(0.35, 1.0),
+            "environment_quality": rng.uniform(0.55, 1.0),
+            "genomic_weight": rng.uniform(0.0, 0.10),
+        }
+        cfg = ChildConfig(
+            seed=rng.randint(0, 10_000_000),
+            scenario="global_digital_twin",
+            acceleration=values["acceleration"],
+            exploration=values["exploration"],
+            mentorship=values["mentorship"],
+            environment_quality=values["environment_quality"],
+            genomic_weight=values["genomic_weight"],
+        )
         out = simulate(cfg, include_experiments=False).impact
         y = out.competency_age
         baseline.append(y)
@@ -120,7 +138,7 @@ def sensitivity_analysis(seed: int = 42, samples: int = 96) -> Dict:
     return {"seed": seed, "samples": samples, "metric": "terminal_human_development_index", "competency_age_distribution": summarize(baseline), "sensitivity": result}
 
 
-def fairness_lab(seed: int = 42, per_group: int = 24) -> Dict:
+def fairness_lab(seed: int = 42, per_group: int = 24) -> dict:
     rng = random.Random(seed)
     rows = []
     groups = {"A_high_resource": 0.94, "B_mid_resource": 0.76, "C_low_resource": 0.58}
@@ -140,13 +158,35 @@ def fairness_lab(seed: int = 42, per_group: int = 24) -> Dict:
             "warning": "Groups are synthetic resource-access strata, not demographic groups."}
 
 
-def calibration_lab(seed: int = 42, size: int = 72) -> Dict:
+def calibration_lab(seed: int = 42, size: int = 72) -> dict:
+    from .calibration import evaluate_multiclass, fit_temperature, temperature_scale
+    from .models import PATHWAYS
+
     rng = random.Random(seed)
-    predictions, outcomes = [], []
-    for _ in range(size):
+    probability_rows: list[dict[str, float]] = []
+    outcomes: list[str] = []
+    for _ in range(size * 2):
         out = simulate(_cfg_for(rng.randint(0, 10_000_000), "global_digital_twin"), include_experiments=False)
         recs = out.recommendations
         for i in range(len(recs) - 1):
-            predictions.append(recs[i].score)
-            outcomes.append(1.0 if recs[i].pathway == recs[i + 1].pathway else 0.0)
-    return {"n": len(predictions), "proxy_definition": "pathway persistence into next simulated year", **calibration_evaluate(predictions, outcomes)}
+            probability_rows.append(dict(recs[i].ranked_pathways))
+            outcomes.append(recs[i + 1].pathway)
+
+    split = max(1, len(probability_rows) // 2)
+    calibration_probs = probability_rows[:split]
+    calibration_outcomes = outcomes[:split]
+    eval_probs = probability_rows[split:]
+    eval_outcomes = outcomes[split:]
+    classes = list(PATHWAYS)
+    temperature = fit_temperature(calibration_probs, calibration_outcomes, classes)
+    scaled_eval = temperature_scale(eval_probs, temperature)
+    raw_metrics = evaluate_multiclass(eval_probs, eval_outcomes, classes)
+    calibrated_metrics = evaluate_multiclass(scaled_eval, eval_outcomes, classes)
+    return {
+        "n": len(eval_outcomes),
+        "target_definition": "next-year recommended pathway",
+        "calibration_method": "temperature_scaling_on_simulation_holdout",
+        "temperature": temperature,
+        "raw": raw_metrics,
+        "calibrated": calibrated_metrics,
+    }

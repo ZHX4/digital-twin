@@ -1,10 +1,22 @@
 from __future__ import annotations
+
 import sys
 from pathlib import Path as _Path
+
 sys.path.insert(0, str(_Path(__file__).resolve().parents[1]))
-import argparse, json
+import argparse
+import json
 from pathlib import Path
-from app.experiments import calibration_lab, compare_scenarios, counterfactual_lab, fairness_lab, genomic_ablation, sensitivity_analysis
+
+from app.experiments import (
+    calibration_lab,
+    compare_scenarios,
+    counterfactual_lab,
+    fairness_lab,
+    genomic_ablation,
+    sensitivity_analysis,
+)
+
 OUT = Path("results")
 def main() -> None:
     p=argparse.ArgumentParser(description="Digital Twin reproducible research experiments")

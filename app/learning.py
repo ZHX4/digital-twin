@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 import random
-from typing import Dict, List, Tuple
 
-from .models import CORE_SKILLS, LearningUnit, PATHWAYS
+from .models import CORE_SKILLS, PATHWAYS, LearningUnit
 from .psychometrics import bkt_update
 
 DOMAIN_TEMPLATES = {
@@ -22,8 +21,8 @@ DOMAIN_TEMPLATES = {
 }
 
 
-def build_catalog() -> List[LearningUnit]:
-    catalog: List[LearningUnit] = []
+def build_catalog() -> list[LearningUnit]:
+    catalog: list[LearningUnit] = []
     for domain, titles in DOMAIN_TEMPLATES.items():
         for level, title in enumerate(titles, 1):
             prereq = [] if level == 1 else [f"{domain}:{level - 1}"]
@@ -40,7 +39,7 @@ def build_catalog() -> List[LearningUnit]:
 CATALOG = build_catalog()
 
 
-def apply_forgetting(skills: Dict[str, Dict], months: float = 12.0) -> Dict[str, Dict]:
+def apply_forgetting(skills: dict[str, dict], months: float = 12.0) -> dict[str, dict]:
     out = {}
     for skill_id, state in skills.items():
         row = dict(state)
@@ -53,16 +52,16 @@ def apply_forgetting(skills: Dict[str, Dict], months: float = 12.0) -> Dict[str,
     return out
 
 
-def initialize_skill_state(capabilities: Dict[str, float]) -> Dict[str, Dict]:
+def initialize_skill_state(capabilities: dict[str, float]) -> dict[str, dict]:
     return {f"{domain}:1": {"skill_id": f"{domain}:1", "domain": domain, "mastery": float(value),
         "uncertainty": 0.34, "velocity": 0.0, "forgetting_rate": 0.055, "prerequisites": []}
         for domain, value in capabilities.items()}
 
 
-def select_curriculum(age: int, skills: Dict[str, Dict], capabilities: Dict[str, float], pathway: str,
-                      pace: float, max_units: int = 7) -> List[LearningUnit]:
+def select_curriculum(age: int, skills: dict[str, dict], capabilities: dict[str, float], pathway: str,
+                      pace: float, max_units: int = 7) -> list[LearningUnit]:
     target_domains = set(PATHWAYS[pathway])
-    candidates: List[Tuple[float, LearningUnit]] = []
+    candidates: list[tuple[float, LearningUnit]] = []
     level_ceiling = max(1, min(6, int(1 + age / 2.5)))
     for unit in CATALOG:
         if unit.domain != "core" and unit.domain not in target_domains:
@@ -75,7 +74,7 @@ def select_curriculum(age: int, skills: Dict[str, Dict], capabilities: Dict[str,
         score = 0.40 * gap + 0.22 * level_fit + 0.18 * unit.novelty + 0.12 * exploration_value + 0.08 * float(prerequisite_ok)
         candidates.append((score, unit))
     candidates.sort(key=lambda x: x[0], reverse=True)
-    chosen: List[LearningUnit] = []
+    chosen: list[LearningUnit] = []
     used_domains = set()
     for score, unit in candidates:
         if unit.domain != "core" and unit.domain in used_domains and len(chosen) < max_units - 2:
@@ -88,8 +87,8 @@ def select_curriculum(age: int, skills: Dict[str, Dict], capabilities: Dict[str,
     return chosen
 
 
-def apply_learning(capabilities: Dict[str, float], skills: Dict[str, Dict], units: List[LearningUnit],
-                   rng: random.Random, teaching_quality: float, effort_factor: float) -> Tuple[Dict[str, float], Dict[str, Dict], float, int]:
+def apply_learning(capabilities: dict[str, float], skills: dict[str, dict], units: list[LearningUnit],
+                   rng: random.Random, teaching_quality: float, effort_factor: float) -> tuple[dict[str, float], dict[str, dict], float, int]:
     updated_caps = dict(capabilities)
     updated_skills = {k: dict(v) for k, v in skills.items()}
     hours = 0.0
