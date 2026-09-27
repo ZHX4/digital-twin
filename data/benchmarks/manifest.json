@@ -1,0 +1,6 @@
+{
+  "status": "synthetic-only",
+  "real_datasets_in_repo": false,
+  "required_schema": ["learner_id", "skill_id", "correct", "timestamp"],
+  "provenance_required_for_future_data": true
+}
