@@ -158,7 +158,7 @@ def fairness_lab(seed: int = 42, per_group: int = 24) -> dict:
             "warning": "Groups are synthetic resource-access strata, not demographic groups."}
 
 
-def calibration_lab(seed: int = 42, size: int = 72) -> dict:
+def calibration_lab(seed: int = 42, size: int = 72, scenario: str = "global_digital_twin") -> dict:
     from .calibration import evaluate_multiclass, fit_temperature, temperature_scale
     from .models import PATHWAYS
 
@@ -166,7 +166,7 @@ def calibration_lab(seed: int = 42, size: int = 72) -> dict:
     probability_rows: list[dict[str, float]] = []
     outcomes: list[str] = []
     for _ in range(size * 2):
-        out = simulate(_cfg_for(rng.randint(0, 10_000_000), "global_digital_twin"), include_experiments=False)
+        out = simulate(_cfg_for(rng.randint(0, 10_000_000), scenario), include_experiments=False)
         recs = out.recommendations
         for i in range(len(recs) - 1):
             probability_rows.append(dict(recs[i].ranked_pathways))
@@ -184,6 +184,7 @@ def calibration_lab(seed: int = 42, size: int = 72) -> dict:
     calibrated_metrics = evaluate_multiclass(scaled_eval, eval_outcomes, classes)
     return {
         "n": len(eval_outcomes),
+        "scenario": scenario,
         "target_definition": "next-year recommended pathway",
         "calibration_method": "temperature_scaling_on_simulation_holdout",
         "temperature": temperature,
